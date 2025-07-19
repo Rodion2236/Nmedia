@@ -11,8 +11,8 @@
 
     <ImageView
         android:id="@+id/avatar"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/posts_avatar_size"
+        android:layout_height="@dimen/posts_avatar_size"
         android:contentDescription="TODO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -42,10 +42,11 @@
         app:layout_constraintStart_toEndOf="@id/avatar"
         tools:text="@sample/posts.json/data/published" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/menu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         app:srcCompat="@drawable/ic_more_vert_24"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -74,19 +75,21 @@
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="content" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/like"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         android:layout_marginVertical="@dimen/common_margin"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/barrierContent"
         app:srcCompat="@drawable/ic_empty_like" />
 
-    <ImageView
+    <ImageButton
         android:id="@+id/share"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
         android:layout_marginHorizontal="@dimen/common_margin"
         android:layout_marginVertical="@dimen/common_margin"
         app:layout_constraintStart_toEndOf="@+id/like_tv"
@@ -99,7 +102,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/common_margin"
         android:layout_marginVertical="@dimen/common_margin"
-        app:layout_constraintEnd_toStartOf="@+id/eyes_tv"
+        app:layout_constraintEnd_toStartOf="@+id/views_tv"
         app:layout_constraintTop_toBottomOf="@id/barrierContent"
         app:srcCompat="@drawable/ic_eye" />
 
@@ -124,7 +127,7 @@
         tools:text="999K" />
 
     <TextView
-        android:id="@+id/eyes_tv"
+        android:id="@+id/views_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginVertical="@dimen/common_margin"
