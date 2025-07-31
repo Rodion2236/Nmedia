@@ -2,4 +2,12 @@
 <resources>
     <string name="app_name">Нмедиа</string>
     <string name="nmedia">Нмедиа</string>
+    <string name="remove">Удалить</string>
+    <string name="post_text">Текст поста</string>
+    <string name="menu_edit">Редактировать</string>
+    <string name="error_empty_content">Пусто</string>
+    <string name="cancel_edit">Отмена</string>
+    <string name="save">Сохранить</string>
+    <string name="editing">Редактирование сообщения</string>
+    <string name="edit_post_hint">Редактировать пост</string>
 </resources>

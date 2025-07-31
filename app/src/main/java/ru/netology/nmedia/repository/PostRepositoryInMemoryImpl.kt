@@ -1,8 +1,11 @@
 package ru.netology.nmedia.repository
 
+import android.icu.text.SimpleDateFormat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import ru.netology.nmedia.dto.Post
+import java.util.Date
+import java.util.Locale
 
 class PostRepositoryInMemoryImpl: PostRepository {
 
@@ -74,6 +77,7 @@ class PostRepositoryInMemoryImpl: PostRepository {
 
     private val _data = MutableLiveData(posts)
     override fun get(): LiveData<List<Post>> = _data
+    private var nextId = 1L
 
     override fun likeById(id: Long) {
 
@@ -112,6 +116,27 @@ class PostRepositoryInMemoryImpl: PostRepository {
                 )
             } else {
                 post
+            }
+        }
+        _data.value = posts
+    }
+
+    override fun removeById(id: Long) {
+        posts = posts.filter { it.id != id }
+        _data.value = posts
+    }
+
+    override fun save(post: Post) {
+        posts = if (post.id == 0L) {
+                listOf(post.copy(
+                    nextId++,
+                    "Me",
+                    published = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
+                )
+            ) + posts
+        } else {
+            posts.map {
+                if (it.id != post.id) it else it.copy(content = post.content)
             }
         }
         _data.value = posts
