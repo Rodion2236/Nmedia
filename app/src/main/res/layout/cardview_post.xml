@@ -9,6 +9,19 @@
     android:padding="@dimen/common_margin"
     tools:context=".activity.MainActivity">
 
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/menu"
+        style="@style/Widget.AppTheme.IconButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="@dimen/common_margin"
+        android:layout_marginVertical="@dimen/common_margin"
+        android:layout_marginEnd="12dp"
+        android:minWidth="0dp"
+        app:icon="@drawable/ic_more_vert_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ImageView
         android:id="@+id/avatar"
         android:layout_width="@dimen/posts_avatar_size"
@@ -42,15 +55,6 @@
         app:layout_constraintStart_toEndOf="@id/avatar"
         tools:text="@sample/posts.json/data/published" />
 
-    <ImageButton
-        android:id="@+id/menu"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:srcCompat="@drawable/ic_more_vert_24"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrierHeader"
         android:layout_width="wrap_content"
@@ -75,26 +79,34 @@
         app:barrierDirection="bottom"
         app:constraint_referenced_ids="content" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/like"
+        style="@style/Widget.AppTheme.LikeButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:layout_marginVertical="@dimen/common_margin"
+        android:minWidth="0dp"
+        app:iconPadding="8dp"
+        android:checkable="true"
+        app:icon="@drawable/like_selector"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/barrierContent"
-        app:srcCompat="@drawable/ic_empty_like" />
+        tools:text="999K"
+        app:layout_constraintTop_toBottomOf="@+id/barrierContent" />
 
-    <ImageButton
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/share"
+        style="@style/Widget.AppTheme.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
         android:layout_marginHorizontal="@dimen/common_margin"
-        android:layout_marginVertical="@dimen/common_margin"
-        app:layout_constraintStart_toEndOf="@+id/like_tv"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        android:minWidth="0dp"
+        app:icon="@drawable/ic_share"
+        app:iconPadding="8dp"
+        app:layout_constraintBottom_toBottomOf="@+id/like"
+        app:layout_constraintStart_toEndOf="@+id/like"
         app:layout_constraintTop_toBottomOf="@id/barrierContent"
-        app:srcCompat="@drawable/ic_share" />
+        tools:text="999K" />
 
     <ImageView
         android:id="@+id/eye"
@@ -102,29 +114,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/common_margin"
         android:layout_marginVertical="@dimen/common_margin"
-        app:layout_constraintEnd_toStartOf="@+id/views_tv"
-        app:layout_constraintTop_toBottomOf="@id/barrierContent"
-        app:srcCompat="@drawable/ic_eye" />
-
-    <TextView
-        android:id="@+id/like_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/common_margin"
-        app:layout_constraintBottom_toBottomOf="@+id/like"
-        app:layout_constraintStart_toEndOf="@+id/like"
-        app:layout_constraintTop_toTopOf="@+id/like"
-        tools:text="999K" />
-
-    <TextView
-        android:id="@+id/share_tv"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/common_margin"
         app:layout_constraintBottom_toBottomOf="@+id/share"
-        app:layout_constraintStart_toEndOf="@+id/share"
+        app:layout_constraintEnd_toStartOf="@+id/views_tv"
         app:layout_constraintTop_toTopOf="@+id/share"
-        tools:text="999K" />
+        app:srcCompat="@drawable/ic_eye" />
 
     <TextView
         android:id="@+id/views_tv"

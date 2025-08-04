@@ -50,7 +50,10 @@ class PostViewHolder(
             published.text = post.published
             content.text = post.content
 
-            like.setImageResource(if (post.likedByMe) R.drawable.ic_like else R.drawable.ic_empty_like)
+            like.isChecked = post.likedByMe
+            like.text = formatCount(post.likes)
+
+            share.text = formatCount(post.shares)
 
             like.setOnClickListener {
                 onPostInteractionListener.onLike(post)
@@ -64,8 +67,6 @@ class PostViewHolder(
                 onPostInteractionListener.onView(post)
             }
 
-                likeTv.text = formatCount(post.likes)
-                shareTv.text = formatCount(post.shares)
                 viewsTv.text = formatCount(post.views)
 
             menu.setOnClickListener {
