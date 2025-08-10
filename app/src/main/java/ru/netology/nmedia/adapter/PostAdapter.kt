@@ -21,6 +21,7 @@ interface OnPostInteractionListener {
     fun onView(post: Post)
     fun onRemove(post: Post)
     fun onEdit(post: Post)
+    fun onVideoClick(post: Post)
 }
 
 class PostAdapter(
@@ -96,14 +97,7 @@ class PostViewHolder(
                 video.visibility = View.VISIBLE
 
                 video.setOnClickListener {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = post.video.toUri()
-                    }
-                    if (intent.resolveActivity(itemView.context.packageManager) != null) {
-                        itemView.context.startActivity(intent)
-                    } else {
-                        Toast.makeText(itemView.context, "Нет приложения для открытия видео", Toast.LENGTH_SHORT).show()
-                    }
+                    onPostInteractionListener.onVideoClick(post)
                 }
             } else {
                 video.visibility = View.GONE

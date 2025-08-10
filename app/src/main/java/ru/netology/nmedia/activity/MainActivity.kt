@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
@@ -50,6 +51,13 @@ class MainActivity : AppCompatActivity() {
 
             override fun onEdit(post: Post) {
                 newPostLauncher.launch(post)
+            }
+
+            override fun onVideoClick(post: Post) {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    data = post.video?.toUri()
+                }
+                startActivity(intent)
             }
         })
 
