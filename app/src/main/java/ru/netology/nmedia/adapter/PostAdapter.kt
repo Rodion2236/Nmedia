@@ -1,8 +1,12 @@
 package ru.netology.nmedia.adapter
 
+import android.content.Intent
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -87,8 +91,26 @@ class PostViewHolder(
                     }
                 }.show()
             }
+
+            if (post.video != null) {
+                video.visibility = View.VISIBLE
+
+                video.setOnClickListener {
+                    val intent = Intent(Intent.ACTION_VIEW).apply {
+                        data = post.video.toUri()
+                    }
+                    if (intent.resolveActivity(itemView.context.packageManager) != null) {
+                        itemView.context.startActivity(intent)
+                    } else {
+                        Toast.makeText(itemView.context, "Нет приложения для открытия видео", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                video.visibility = View.GONE
             }
         }
+    }
+
     object PostDiffCallback : DiffUtil.ItemCallback<Post>() {
         override fun areItemsTheSame(
             oldItem: Post,

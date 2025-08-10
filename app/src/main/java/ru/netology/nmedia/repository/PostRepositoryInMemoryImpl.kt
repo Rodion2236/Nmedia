@@ -50,7 +50,8 @@ class PostRepositoryInMemoryImpl: PostRepository {
             author = "Нетология. Университет интернет-профессий будущего",
             content = "Большая афиша мероприятий осени: конференции, выставки и хакатоны для жителей Москвы, Ульяновска и Новосибирска \uD83D\uDE09",
             published = "19 сентября в 14:12",
-            likedByMe = false
+            likedByMe = false,
+            video = "https://rutube.ru/video/fb088adadcc3c6cfcd0c53c402a0f6c4/"
         ),
         Post(
             id = 3,

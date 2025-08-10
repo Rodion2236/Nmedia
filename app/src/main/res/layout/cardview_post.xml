@@ -26,7 +26,6 @@
         android:id="@+id/avatar"
         android:layout_width="@dimen/posts_avatar_size"
         android:layout_height="@dimen/posts_avatar_size"
-        android:contentDescription="TODO"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@sample/posts_avatars" />
@@ -72,6 +71,40 @@
         app:layout_constraintTop_toBottomOf="@id/barrierHeader"
         tools:text="@sample/posts.json/data/content" />
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/video"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageView
+            android:id="@+id/preview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:background="@drawable/video_placeholder"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <ImageButton
+            android:id="@+id/play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:srcCompat="@drawable/ic_play"
+            android:clickable="false"
+            android:focusable="false"
+            app:layout_constraintTop_toTopOf="@id/preview"
+            app:layout_constraintBottom_toBottomOf="@id/preview"
+            app:layout_constraintStart_toStartOf="@id/preview"
+            app:layout_constraintEnd_toEndOf="@id/preview" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrierContent"
         android:layout_width="wrap_content"
@@ -90,7 +123,7 @@
         app:icon="@drawable/like_selector"
         app:layout_constraintStart_toStartOf="parent"
         tools:text="999K"
-        app:layout_constraintTop_toBottomOf="@+id/barrierContent" />
+        app:layout_constraintTop_toBottomOf="@+id/video" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/share"
@@ -105,7 +138,7 @@
         app:iconPadding="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/like"
         app:layout_constraintStart_toEndOf="@+id/like"
-        app:layout_constraintTop_toBottomOf="@id/barrierContent"
+        app:layout_constraintTop_toBottomOf="@id/video"
         tools:text="999K" />
 
     <ImageView
