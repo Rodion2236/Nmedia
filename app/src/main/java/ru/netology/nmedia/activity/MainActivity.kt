@@ -32,6 +32,7 @@ class MainActivity : AppCompatActivity() {
             }
 
             override fun onShare(post: Post) {
+                viewmodel.share(post.id)
                 val intent = Intent().apply {
                     action = Intent.ACTION_SEND
                     type = "text/plain"

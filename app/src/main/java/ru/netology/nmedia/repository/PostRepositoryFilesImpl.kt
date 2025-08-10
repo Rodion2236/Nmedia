@@ -18,8 +18,10 @@ class PostRepositoryFilesImpl(private val context: Context): PostRepository {
             field = value
             sync()
         }
+
     private val _data = MutableLiveData(posts)
     override fun get(): LiveData<List<Post>> = _data
+    private var nextId = 1L
 
     init {
         val file = context.filesDir.resolve(FILENAME)
@@ -27,9 +29,9 @@ class PostRepositoryFilesImpl(private val context: Context): PostRepository {
             context.openFileInput(FILENAME).bufferedReader().use {
                 posts = gson.fromJson(it, type)
                 nextId = posts.maxOfOrNull { it.id }?.inc() ?: 1
-                _data.value = posts
             }
         }
+        _data.value = posts
     }
 
     private fun sync() {
@@ -38,10 +40,7 @@ class PostRepositoryFilesImpl(private val context: Context): PostRepository {
         }
     }
 
-    private var nextId = 1L
-
     override fun likeById(id: Long) {
-
         posts = posts.map { post ->
             if (post.id == id) {
                 post.copy(
@@ -93,8 +92,7 @@ class PostRepositoryFilesImpl(private val context: Context): PostRepository {
                 nextId++,
                 "Me",
                 published = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date())
-            )
-            ) + posts
+            )) + posts
         } else {
             posts.map {
                 if (it.id != post.id) it else it.copy(content = post.content)
@@ -105,7 +103,6 @@ class PostRepositoryFilesImpl(private val context: Context): PostRepository {
 
     companion object {
         private const val FILENAME = "posts.json"
-
         private val gson = Gson()
         private val type = TypeToken.getParameterized(List::class.java, Post::class.java).type
     }
