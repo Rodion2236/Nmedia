@@ -1,12 +1,10 @@
 package ru.netology.nmedia.adapter
 
-import android.content.Intent
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
-import androidx.core.net.toUri
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -22,6 +20,7 @@ interface OnPostInteractionListener {
     fun onRemove(post: Post)
     fun onEdit(post: Post)
     fun onVideoClick(post: Post)
+    fun onPostClick(post: Post)
 }
 
 class PostAdapter(
@@ -72,7 +71,7 @@ class PostViewHolder(
                 onPostInteractionListener.onView(post)
             }
 
-                viewsTv.text = formatCount(post.views)
+            viewsTv.text = formatCount(post.views)
 
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
@@ -102,6 +101,10 @@ class PostViewHolder(
             } else {
                 video.visibility = View.GONE
             }
+
+            binding.root.setOnClickListener {
+                onPostInteractionListener.onPostClick(post)
+            }
         }
     }
 
@@ -121,6 +124,3 @@ class PostViewHolder(
         }
     }
 }
-
-
-

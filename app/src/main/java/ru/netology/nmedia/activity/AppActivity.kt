@@ -6,17 +6,18 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
-import ru.netology.nmedia.databinding.ActivityIntentHandlerBinding
+import ru.netology.nmedia.databinding.AppActivityBinding
 
-class IntentHandlerActivity : AppCompatActivity() {
+class AppActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        val binding = ActivityIntentHandlerBinding.inflate(layoutInflater)
+        val binding = AppActivityBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
@@ -33,6 +34,12 @@ class IntentHandlerActivity : AppCompatActivity() {
                     }
                     .show()
             }
+            findNavController(R.id.nav_host_fragment).navigate(
+                R.id.action_feedFragment_to_newPostFragment,
+                Bundle().apply {
+                    putString("content", text)
+                }
+            )
         }
     }
 }

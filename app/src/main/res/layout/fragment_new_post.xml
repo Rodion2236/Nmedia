@@ -5,8 +5,7 @@
     android:id="@+id/main"
     android:padding="@dimen/common_margin"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".activity.NewPostActivity">
+    android:layout_height="match_parent">
 
     <EditText
         android:id="@+id/content"

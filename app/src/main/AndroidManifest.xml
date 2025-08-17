@@ -18,26 +18,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Nmedia">
         <activity
-            android:name=".activity.NewPostActivity"
-            android:exported="false" />
-        <activity
-            android:name=".activity.IntentHandlerActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.SEND" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="text/plain" />
-            </intent-filter>
-        </activity>
-        <activity
-            android:name=".activity.MainActivity"
+            android:name="ru.netology.nmedia.activity.AppActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
     </application>

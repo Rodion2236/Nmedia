@@ -6,8 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="@dimen/common_margin"
-    tools:context=".activity.MainActivity">
+    android:padding="@dimen/common_margin">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"

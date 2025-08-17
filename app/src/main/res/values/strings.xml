@@ -10,4 +10,6 @@
     <string name="editing">Editing</string>
     <string name="edit_post_hint">Edit post</string>
     <string name="chooser_share_post">Share post</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
