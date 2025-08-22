@@ -3,11 +3,13 @@ package ru.netology.nmedia.viewModel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import ru.netology.nmedia.database.PostDbHelper
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryFilesImpl
+import ru.netology.nmedia.repository.PostRepositorySQLiteImpl
 
-class PostViewModel(application: Application): AndroidViewModel(application) {
+class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     private val empty = Post(
         0,
@@ -18,9 +20,11 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
         false
     )
 
-    private val repository: PostRepository = PostRepositoryFilesImpl(application)
-    val data = repository.get()
+    private val db = PostDbHelper(application).writableDatabase
+    private val repository: PostRepository = PostRepositorySQLiteImpl(db)
+//    private val repository: PostRepository = PostRepositoryFilesImpl(application)
 
+    val data = repository.get()
     val edited = MutableLiveData(empty)
     fun like(id: Long) = repository.likeById(id)
     fun share(id: Long) = repository.shareById(id)
@@ -37,6 +41,7 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
                 content = content,
                 "",
                 likedByMe = false,
+                video = null
             )
         } else {
             Post(
@@ -45,6 +50,7 @@ class PostViewModel(application: Application): AndroidViewModel(application) {
                 content = content,
                 "",
                 likedByMe = false,
+                video = null
             )
         }
         repository.save(newPost)

@@ -5,6 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.doOnAttach
+import androidx.core.view.doOnPreDraw
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -50,6 +52,7 @@ class PostViewHolder(
 ): RecyclerView.ViewHolder(binding.root) {
     fun bind(post: Post) {
         binding.apply {
+            Log.d("PostViewHolder", "video = '${post.video}', isNullOrBlank = ${post.video.isNullOrBlank()}")
             author.text = post.author
             published.text = post.published
             content.text = post.content
@@ -67,8 +70,8 @@ class PostViewHolder(
                 onPostInteractionListener.onShare(post)
             }
 
-            if (!post.viewed) {
-                onPostInteractionListener.onView(post)
+                if (!post.viewed) {
+                    onPostInteractionListener.onView(post)
             }
 
             viewsTv.text = formatCount(post.views)
@@ -92,7 +95,7 @@ class PostViewHolder(
                 }.show()
             }
 
-            if (post.video != null) {
+            if (!post.video.isNullOrBlank()) {
                 video.visibility = View.VISIBLE
 
                 video.setOnClickListener {
