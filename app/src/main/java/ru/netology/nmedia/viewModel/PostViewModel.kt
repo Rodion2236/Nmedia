@@ -3,11 +3,13 @@ package ru.netology.nmedia.viewModel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
-import ru.netology.nmedia.database.PostDbHelper
+import ru.netology.nmedia.database.PostDatabase
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositoryFilesImpl
-import ru.netology.nmedia.repository.PostRepositorySQLiteImpl
+import ru.netology.nmedia.repository.PostRepositoryRoomImpl
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -19,10 +21,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         0,
         false
     )
-
-    private val db = PostDbHelper(application).writableDatabase
-    private val repository: PostRepository = PostRepositorySQLiteImpl(db)
-//    private val repository: PostRepository = PostRepositoryFilesImpl(application)
+    private val database = PostDatabase.getInstance(application)
+    private val repository: PostRepository = PostRepositoryRoomImpl(database.postDao())
 
     val data = repository.get()
     val edited = MutableLiveData(empty)
@@ -33,28 +33,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun save(content: String, postId: Long = 0L) {
         if (content.isBlank()) return
-
         val newPost = if (postId == 0L) {
             Post(
                 id = 0,
-                "",
+                "Родион Косолапкин",
                 content = content,
-                "",
+                SimpleDateFormat("dd MMMM HH:mm", Locale("ru")).format(Date()),
                 likedByMe = false,
                 video = null
             )
         } else {
             Post(
                 id = postId,
-                "",
+                "Родион Косолапкин",
                 content = content,
-                "",
+                SimpleDateFormat("dd MMMM HH:mm", Locale("ru")).format(Date()),
                 likedByMe = false,
                 video = null
             )
         }
         repository.save(newPost)
-
         if (postId != 0L) {
             edited.value = empty
         }

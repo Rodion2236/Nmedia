@@ -16,7 +16,9 @@ import ru.netology.nmedia.viewModel.PostViewModel
 
 class NewPostFragment : Fragment() {
 
-    private val viewModel: PostViewModel by activityViewModels()
+    private val viewModel: PostViewModel by activityViewModels {
+        defaultViewModelProviderFactory
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

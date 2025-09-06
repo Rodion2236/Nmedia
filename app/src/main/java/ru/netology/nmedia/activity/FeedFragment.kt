@@ -20,7 +20,9 @@ import ru.netology.nmedia.viewModel.PostViewModel
 
 class FeedFragment : Fragment() {
 
-    private val viewmodel: PostViewModel by activityViewModels()
+    private val viewmodel: PostViewModel by activityViewModels {
+        defaultViewModelProviderFactory
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

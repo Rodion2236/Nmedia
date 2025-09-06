@@ -20,7 +20,9 @@ import ru.netology.nmedia.viewModel.PostViewModel
 
 class SinglePostFragment : Fragment() {
 
-    private val viewModel: PostViewModel by activityViewModels()
+    private val viewModel: PostViewModel by activityViewModels {
+        defaultViewModelProviderFactory
+    }
     private var postId: Long = 0L
 
     override fun onCreate(savedInstanceState: Bundle?) {
