@@ -11,4 +11,8 @@
     <string name="editing">Редактирование сообщения</string>
     <string name="edit_post_hint">Редактировать пост</string>
     <string name="chooser_share_post">Поделиться постом</string>
+    <string name="notification_user_liked">"%1$s поставил лайк посту %2$s's"</string>
+    <string name="channel_remote_name">Уведомления сервера</string>
+    <string name="channel_remote_description">Уведомления с удаленного сервера</string>
+    <string name="notification_new_post_title">%1$s опубликовал новый пост:</string>
 </resources>

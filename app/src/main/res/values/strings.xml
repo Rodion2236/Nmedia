@@ -10,4 +10,8 @@
     <string name="editing">Editing</string>
     <string name="edit_post_hint">Edit post</string>
     <string name="chooser_share_post">Share post</string>
+    <string name="notification_user_liked">User %1$s liked %2$s\'s post</string>
+    <string name="channel_remote_name">Server notifications</string>
+    <string name="channel_remote_description">Notifications from remote server</string>
+    <string name="notification_new_post_title">%1$s publish a new post:</string>
 </resources>

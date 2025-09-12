@@ -18,7 +18,7 @@ interface PostDao {
     @Query("DELETE FROM posts WHERE id = :id")
     fun deleteById(id: Long)
 
-    @Query("UPDATE posts SET likes = likes + 1, likedByMe = 1 WHERE id = :id")
+    @Query("UPDATE posts SET likedByMe = CASE WHEN likedByMe = 1 THEN 0 ELSE 1 END, likes = likes + CASE WHEN likedByMe = 1 THEN -1 ELSE 1 END WHERE id = :id")
     fun likeById(id: Long)
 
     @Query("UPDATE posts SET likes = likes - 1, likedByMe = 0 WHERE id = :id AND likedByMe = 1")
