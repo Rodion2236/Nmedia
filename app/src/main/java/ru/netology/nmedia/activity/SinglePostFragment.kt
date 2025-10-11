@@ -37,8 +37,8 @@ class SinglePostFragment : Fragment() {
     ): View? {
         val binding = FragmentSinglePostBinding.inflate(inflater, container, false)
 
-        viewModel.data.observe(viewLifecycleOwner) { posts ->
-            val post = posts.find { it.id == postId }
+        viewModel.data.observe(viewLifecycleOwner) { state ->
+            val post = state.posts.find { it.id == postId }
             if (post != null) {
                 PostViewHolder(binding.postLayout, object : OnPostInteractionListener {
                     override fun onLike(post: Post) {

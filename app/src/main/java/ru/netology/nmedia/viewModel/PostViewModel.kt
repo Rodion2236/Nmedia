@@ -2,14 +2,14 @@ package ru.netology.nmedia.viewModel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import ru.netology.nmedia.database.PostDatabase
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositoryRoomImpl
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import ru.netology.nmedia.repository.PostRepositoryNetwork
+import ru.netology.nmedia.util.SingleLiveEvent
+import kotlin.concurrent.thread
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -21,40 +21,109 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         0,
         false
     )
-    private val database = PostDatabase.getInstance(application)
-    private val repository: PostRepository = PostRepositoryRoomImpl(database.postDao())
-
-    val data = repository.get()
+    private val repository: PostRepository = PostRepositoryNetwork()
+    private val _data: MutableLiveData<FeedModel> = MutableLiveData(FeedModel())
+    val data: LiveData<FeedModel>
+        get() = _data
     val edited = MutableLiveData(empty)
-    fun like(id: Long) = repository.likeById(id)
-    fun share(id: Long) = repository.shareById(id)
-    fun views(id: Long) = repository.viewsById(id)
-    fun remove(id: Long) = repository.removeById(id)
+    private val _postCreated = SingleLiveEvent<Unit>()
+    val postCreated: LiveData<Unit>
+        get() = _postCreated
 
-    fun save(content: String, postId: Long = 0L) {
-        if (content.isBlank()) return
-        val newPost = if (postId == 0L) {
-            Post(
-                id = 0,
-                "Родион Косолапкин",
-                content = content,
-                SimpleDateFormat("dd MMMM HH:mm", Locale("ru")).format(Date()),
-                likedByMe = false,
-                video = null
-            )
-        } else {
-            Post(
-                id = postId,
-                "Родион Косолапкин",
-                content = content,
-                SimpleDateFormat("dd MMMM HH:mm", Locale("ru")).format(Date()),
-                likedByMe = false,
-                video = null
-            )
+    init {
+        load()
+    }
+
+    fun load() {
+        thread {
+            _data.postValue((_data.value ?: FeedModel()).copy(loading = true))
+            try {
+                val posts = repository.get()
+                _data.postValue((_data.value ?: FeedModel()).copy(
+                    posts = posts,
+                    empty = posts.isEmpty(),
+                    loading = false
+                ))
+            } catch (_: Exception) {
+                _data.postValue((_data.value ?: FeedModel()).copy(
+                    loading = false,
+                    error = true
+                ))
+            }
         }
-        repository.save(newPost)
-        if (postId != 0L) {
-            edited.value = empty
+    }
+
+    fun like(id: Long) {
+        thread {
+            try {
+                val currentPost = _data.value?.posts?.find { it.id == id }
+                val updatedPost = if (currentPost?.likedByMe == true) {
+                    repository.unlikeById(id)
+                } else {
+                    repository.likeById(id)
+                }
+
+                val currentPosts = _data.value?.posts.orEmpty().toMutableList()
+                val index = currentPosts.indexOfFirst { it.id == id }
+                if (index != -1) {
+                    currentPosts[index] = updatedPost
+                }
+                _data.postValue(FeedModel(posts = currentPosts, empty = currentPosts.isEmpty()))
+            } catch (_: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        }
+    }
+
+    fun share(id: Long) {
+        thread {
+            try {
+                repository.shareById(id)
+                load()
+            } catch (_: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        }
+    }
+
+    fun views(id: Long) {
+        thread {
+            try {
+                repository.viewsById(id)
+            } catch (_: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        }
+    }
+
+    fun remove(id: Long) {
+        thread {
+            try {
+                repository.removeById(id)
+                load()
+            } catch (_: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        }
+    }
+
+    fun save(content: String) {
+        thread {
+            edited.value?.let {
+                val text = content.trim()
+                if (it.content != text) {
+                    repository.save(it.copy(content = text))
+                    _postCreated.postValue(Unit)
+                }
+            }
+            edited.postValue(empty)
+        }
+    }
+
+    fun editPost(id: Long) {
+        val postToEdit = _data.value?.posts?.find { it.id == id }
+        if (postToEdit != null) {
+            edited.value = postToEdit
         }
     }
 }

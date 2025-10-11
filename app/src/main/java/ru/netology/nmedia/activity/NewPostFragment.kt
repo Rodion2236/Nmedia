@@ -30,6 +30,12 @@ class NewPostFragment : Fragment() {
         arguments?.textArg?.let {
             binding.content.setText(it)
             binding.content.setSelection(it.length)
+
+            arguments?.postIdArg?.let { id ->
+                if (id != 0L) {
+                    viewModel.editPost(id)
+                }
+            }
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -41,13 +47,15 @@ class NewPostFragment : Fragment() {
         binding.add.setOnClickListener {
             val content = binding.content.text.toString().trim()
             if (content.isNotBlank()) {
-                val postId = arguments?.postIdArg ?: 0L
-
-                viewModel.save(content, postId)
+                viewModel.save(content)
                 findNavController().navigateUp()
             }
         }
 
+        viewModel.postCreated.observe(viewLifecycleOwner) {
+            findNavController().navigateUp()
+            viewModel.load()
+        }
         return binding.root
     }
 }
