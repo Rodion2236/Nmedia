@@ -19,6 +19,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         "",
         "",
         0,
+        0,
         false
     )
     private val repository: PostRepository = PostRepositoryNetwork()
@@ -35,88 +36,88 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun load() {
-        thread {
-            _data.postValue((_data.value ?: FeedModel()).copy(loading = true))
-            try {
-                val posts = repository.get()
-                _data.postValue((_data.value ?: FeedModel()).copy(
-                    posts = posts,
-                    empty = posts.isEmpty(),
-                    loading = false
-                ))
-            } catch (_: Exception) {
-                _data.postValue((_data.value ?: FeedModel()).copy(
-                    loading = false,
-                    error = true
-                ))
+        _data.postValue(FeedModel(loading = true))
+        repository.getAllASync(object : PostRepository.GetAllCallback {
+            override fun onSuccess(posts: List<Post>) {
+                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
-        }
+
+            override fun onError(e: Exception) {
+                _data.postValue(FeedModel(error = true))
+            }
+        })
     }
 
     fun like(id: Long) {
-        thread {
-            try {
-                val currentPost = _data.value?.posts?.find { it.id == id }
-                val updatedPost = if (currentPost?.likedByMe == true) {
-                    repository.unlikeById(id)
-                } else {
-                    repository.likeById(id)
-                }
+        val currentPost = _data.value?.posts?.find { it.id == id } ?: return
 
-                val currentPosts = _data.value?.posts.orEmpty().toMutableList()
-                val index = currentPosts.indexOfFirst { it.id == id }
-                if (index != -1) {
-                    currentPosts[index] = updatedPost
-                }
-                _data.postValue(FeedModel(posts = currentPosts, empty = currentPosts.isEmpty()))
-            } catch (_: Exception) {
+        val callback = object : PostRepository.ActionCallback {
+            override fun onSuccess() {
+                load()
+            }
+
+            override fun onError(e: Exception) {
                 _data.postValue(FeedModel(error = true))
             }
+        }
+
+        if (currentPost.likedByMe) {
+            repository.unlikeById(id, callback)
+        } else {
+            repository.likeById(id, callback)
         }
     }
 
     fun share(id: Long) {
-        thread {
-            try {
-                repository.shareById(id)
+        repository.shareById(id, object : PostRepository.ActionCallback {
+            override fun onSuccess() {
                 load()
-            } catch (_: Exception) {
+            }
+
+            override fun onError(e: Exception) {
                 _data.postValue(FeedModel(error = true))
             }
-        }
+        })
     }
 
     fun views(id: Long) {
-        thread {
-            try {
-                repository.viewsById(id)
-            } catch (_: Exception) {
+        repository.viewsById(id, object : PostRepository.ActionCallback {
+            override fun onSuccess() {}
+
+            override fun onError(e: Exception) {
                 _data.postValue(FeedModel(error = true))
             }
-        }
+        })
     }
 
     fun remove(id: Long) {
-        thread {
-            try {
-                repository.removeById(id)
+        repository.removeById(id, object : PostRepository.ActionCallback {
+            override fun onSuccess() {
                 load()
-            } catch (_: Exception) {
+            }
+
+            override fun onError(e: Exception) {
                 _data.postValue(FeedModel(error = true))
             }
-        }
+        })
     }
 
     fun save(content: String) {
-        thread {
-            edited.value?.let {
-                val text = content.trim()
-                if (it.content != text) {
-                    repository.save(it.copy(content = text))
-                    _postCreated.postValue(Unit)
-                }
+        edited.value?.let { postToEdit ->
+            val trimmed = content.trim()
+            if (trimmed.isNotBlank() && trimmed != postToEdit.content) {
+                val postToSave = postToEdit.copy(content = trimmed)
+                repository.save(postToSave, object : PostRepository.SaveCallback {
+                    override fun onSuccess(savedPost: Post) {
+                        _postCreated.postValue(Unit)
+                        edited.postValue(empty)
+                    }
+
+                    override fun onError(e: Exception) {
+                        _data.postValue(FeedModel(error = true))
+                    }
+                })
             }
-            edited.postValue(empty)
         }
     }
 
