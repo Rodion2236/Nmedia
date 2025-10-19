@@ -1,5 +1,8 @@
 package ru.netology.nmedia.util
 
+import java.text.SimpleDateFormat
+import java.util.*
+
 fun formatCount(count: Int): String {
     return when {
         count < 1_000 -> "$count"
@@ -21,5 +24,28 @@ fun formatCount(count: Int): String {
             }
         }
         else -> "${count / 1_000_000}M"
+    }
+}
+
+object Utils {
+    fun formatPublished(published: Long): String {
+        val currentMillis = System.currentTimeMillis()
+        val postMillis = published * 1000
+        val diff = currentMillis - postMillis
+
+        val minuteInMillis = 60_000L
+        val hourInMillis = 3_600_000L
+        val dayInMillis = 86_400_000L
+
+        return when {
+            diff < minuteInMillis -> "только что"
+            diff < hourInMillis -> "${diff / minuteInMillis} мин назад"
+            diff < dayInMillis -> "${diff / hourInMillis} ч назад"
+            diff < 2 * dayInMillis -> "вчера"
+            else -> {
+                val formatter = SimpleDateFormat("d MMM yy", Locale.getDefault())
+                formatter.format(Date(postMillis))
+            }
+        }
     }
 }

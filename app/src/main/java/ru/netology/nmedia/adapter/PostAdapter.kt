@@ -1,6 +1,5 @@
 package ru.netology.nmedia.adapter
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,9 +7,12 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardviewPostBinding
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.repository.PostRepositoryNetwork
+import ru.netology.nmedia.util.Utils
 import ru.netology.nmedia.util.formatCount
 
 interface OnPostInteractionListener {
@@ -50,9 +52,8 @@ class PostViewHolder(
 ): RecyclerView.ViewHolder(binding.root) {
     fun bind(post: Post) {
         binding.apply {
-            Log.d("PostViewHolder", "video = '${post.video}', isNullOrBlank = ${post.video.isNullOrBlank()}")
             author.text = post.author
-            published.text = post.published.toString()
+            binding.published.text = Utils.formatPublished(post.published)
             content.text = post.content
 
             like.isChecked = post.likedByMe
@@ -105,6 +106,26 @@ class PostViewHolder(
 
             binding.root.setOnClickListener {
                 onPostInteractionListener.onPostClick(post)
+            }
+
+            Glide.with(itemView)
+                .load("${PostRepositoryNetwork.AVATAR_BASE_URL}${post.authorAvatar}")
+                .placeholder(R.drawable.ic_load_24)
+                .error(R.drawable.ic_broken_24)
+                .circleCrop()
+                .timeout(10_000)
+                .into(binding.avatar)
+
+            if (post.attachment != null && post.attachment.type == "IMAGE") {
+                binding.attachmentImage.visibility = View.VISIBLE
+                Glide.with(itemView)
+                    .load("${PostRepositoryNetwork.IMAGE_BASE_URL}${post.attachment.url}")
+                    .placeholder(R.drawable.ic_load_24)
+                    .error(R.drawable.ic_broken_24  )
+                    .timeout(10_000)
+                    .into(binding.attachmentImage)
+            } else {
+                binding.attachmentImage.visibility = View.GONE
             }
         }
     }

@@ -6,8 +6,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="@dimen/common_margin"
-    tools:context=".activity.MainActivity">
+    android:padding="@dimen/common_margin">
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/menu"
@@ -16,9 +15,9 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/common_margin"
         android:layout_marginVertical="@dimen/common_margin"
-        android:layout_marginEnd="12dp"
         android:minWidth="0dp"
         app:icon="@drawable/ic_more_vert_24"
+        app:layout_constraintBottom_toBottomOf="@+id/avatar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -26,6 +25,7 @@
         android:id="@+id/avatar"
         android:layout_width="@dimen/posts_avatar_size"
         android:layout_height="@dimen/posts_avatar_size"
+        android:scaleType="centerCrop"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         tools:srcCompat="@sample/posts_avatars" />
@@ -35,13 +35,13 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/common_margin"
-        android:maxLines="1"
         android:ellipsize="end"
-        app:layout_constraintVertical_chainStyle="packed"
+        android:maxLines="1"
         app:layout_constraintStart_toEndOf="@id/avatar"
-        app:layout_constraintBottom_toTopOf="@id/published"
         app:layout_constraintTop_toTopOf="@+id/avatar"
-        app:layout_constraintEnd_toStartOf="@id/menu"
+        app:layout_constraintBottom_toTopOf="@+id/published"
+        app:layout_constraintEnd_toStartOf="@+id/menu"
+        app:layout_constraintVertical_chainStyle="packed"
         tools:text="@sample/posts.json/data/author" />
 
     <TextView
@@ -49,9 +49,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/common_margin"
-        app:layout_constraintBottom_toTopOf="@id/author"
-        app:layout_constraintTop_toBottomOf="@id/author"
+        app:layout_constraintBottom_toBottomOf="@+id/avatar"
         app:layout_constraintStart_toEndOf="@id/avatar"
+        app:layout_constraintTop_toBottomOf="@+id/author"
         tools:text="@sample/posts.json/data/published" />
 
     <androidx.constraintlayout.widget.Barrier
@@ -65,10 +65,11 @@
         android:id="@+id/content"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/common_margin"
         android:layout_marginVertical="@dimen/common_margin"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/barrierHeader"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         tools:text="@sample/posts.json/data/content" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -96,21 +97,34 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            app:srcCompat="@drawable/ic_play"
             android:clickable="false"
             android:focusable="false"
+            app:srcCompat="@drawable/ic_play"
             app:layout_constraintTop_toTopOf="@id/preview"
             app:layout_constraintBottom_toBottomOf="@id/preview"
             app:layout_constraintStart_toStartOf="@id/preview"
             app:layout_constraintEnd_toEndOf="@id/preview" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <ImageView
+        android:id="@+id/attachmentImage"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/video"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:srcCompat="@tools:sample/backgrounds/scenic"
+        tools:visibility="visible" />
+
     <androidx.constraintlayout.widget.Barrier
         android:id="@+id/barrierContent"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:barrierDirection="bottom"
-        app:constraint_referenced_ids="content" />
+        app:constraint_referenced_ids="content,video,attachmentImage" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/like"
@@ -118,27 +132,26 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="0dp"
-        app:iconPadding="8dp"
         android:checkable="true"
+        app:iconPadding="8dp"
         app:icon="@drawable/like_selector"
         app:layout_constraintStart_toStartOf="parent"
-        tools:text="999K"
-        app:layout_constraintTop_toBottomOf="@+id/video" />
+        app:layout_constraintTop_toBottomOf="@+id/barrierContent"
+        tools:text="999K" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/share"
         style="@style/Widget.AppTheme.IconButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="@dimen/common_margin"
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:minWidth="0dp"
-        app:icon="@drawable/ic_share"
         app:iconPadding="8dp"
+        app:icon="@drawable/ic_share"
         app:layout_constraintBottom_toBottomOf="@+id/like"
         app:layout_constraintStart_toEndOf="@+id/like"
-        app:layout_constraintTop_toBottomOf="@id/video"
+        app:layout_constraintTop_toTopOf="@+id/like"
         tools:text="999K" />
 
     <ImageView
@@ -147,10 +160,10 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="@dimen/common_margin"
         android:layout_marginVertical="@dimen/common_margin"
+        app:srcCompat="@drawable/ic_eye"
         app:layout_constraintBottom_toBottomOf="@+id/share"
         app:layout_constraintEnd_toStartOf="@+id/views_tv"
-        app:layout_constraintTop_toTopOf="@+id/share"
-        app:srcCompat="@drawable/ic_eye" />
+        app:layout_constraintTop_toTopOf="@+id/share" />
 
     <TextView
         android:id="@+id/views_tv"

@@ -27,6 +27,8 @@ class PostRepositoryNetwork() : PostRepository {
 
     companion object {
         private const val BASE_URL = "http://10.0.2.2:9999/"
+        const val AVATAR_BASE_URL = "${BASE_URL}avatars/"
+        const val IMAGE_BASE_URL = "${BASE_URL}images/"
         val jsonType = "application/json".toMediaType()
     }
 
