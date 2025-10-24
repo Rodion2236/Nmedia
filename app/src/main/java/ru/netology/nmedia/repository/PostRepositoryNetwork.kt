@@ -1,135 +1,99 @@
 package ru.netology.nmedia.repository
 
-import com.google.gson.Gson
-import com.google.gson.JsonObject
-import com.google.gson.reflect.TypeToken
-import okhttp3.Call
-import okhttp3.Callback
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
-import okhttp3.logging.HttpLoggingInterceptor
-import okio.IOException
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dto.Post
-import java.util.concurrent.TimeUnit
 
-class PostRepositoryNetwork() : PostRepository {
+class PostRepositoryNetwork : PostRepository {
 
-    private val client = OkHttpClient.Builder()
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-        .build()
-
-    private val gson = Gson()
-    private val typeToken = object : TypeToken<List<Post>>() {}
-
-    companion object {
-        private const val BASE_URL = "http://10.0.2.2:9999/"
-        const val AVATAR_BASE_URL = "${BASE_URL}avatars/"
-        const val IMAGE_BASE_URL = "${BASE_URL}images/"
-        val jsonType = "application/json".toMediaType()
-    }
+    private val apiService = PostApi.retrofitService
 
     override fun getAllASync(callback: PostRepository.GetAllCallback) {
-        val request: Request = Request.Builder()
-            .url("${BASE_URL}api/slow/posts")
-            .build()
-
-        client.newCall(request)
-            .enqueue(object : Callback {
-                override fun onResponse(call: Call, response: Response) {
-                    val body = response.body.string()
-                    try {
-                        callback.onSuccess(gson.fromJson(body, typeToken.type))
-                    } catch (e: Exception) {
-                        callback.onError(e)
-                    }
+        apiService.getAll().enqueue(object : Callback<List<Post>> {
+            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
+                if (response.isSuccessful) {
+                    callback.onSuccess(response.body() ?: emptyList())
+                } else {
+                    callback.onError(RuntimeException("HTTP ${response.code()}"))
                 }
-
-                override fun onFailure(call: Call, e: IOException) {
-                    callback.onError(e)
-                }
-            })
-    }
-
-    private fun makeActionCall(request: Request, callback: PostRepository.ActionCallback) {
-        client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) {
-                callback.onSuccess()
             }
 
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onError(e)
+            override fun onFailure(call: Call<List<Post>>, throwable: Throwable) {
+                callback.onError(throwable)
             }
         })
     }
 
     override fun likeById(id: Long, callback: PostRepository.ActionCallback) {
-        val request = Request.Builder()
-            .post(gson.toJson(JsonObject()).toRequestBody(jsonType))
-            .url("${BASE_URL}api/slow/posts/$id/likes")
-            .build()
-
-        makeActionCall(request, callback)
-    }
-
-    override fun unlikeById(id: Long, callback: PostRepository.ActionCallback) {
-        val request = Request.Builder()
-            .delete()
-            .url("${BASE_URL}api/slow/posts/$id/likes")
-            .build()
-
-        makeActionCall(request, callback)
-    }
-
-    override fun shareById(id: Long, callback: PostRepository.ActionCallback) {
-        val request = Request.Builder()
-            .post(gson.toJson(JsonObject()).toRequestBody(jsonType))
-            .url("${BASE_URL}api/slow/posts/$id/shares")
-            .build()
-
-        makeActionCall(request, callback)
-    }
-
-    override fun viewsById(id: Long, callback: PostRepository.ActionCallback) {
-        val request = Request.Builder()
-            .post(gson.toJson(JsonObject()).toRequestBody(jsonType))
-            .url("${BASE_URL}api/slow/posts/$id/views")
-            .build()
-
-        makeActionCall(request, callback)
-    }
-
-    override fun removeById(id: Long, callback: PostRepository.ActionCallback) {
-        val request = Request.Builder()
-            .delete()
-            .url("${BASE_URL}api/slow/posts/$id")
-            .build()
-
-        makeActionCall(request, callback)
-    }
-
-    override fun save(post: Post, callback: PostRepository.SaveCallback) {
-        val request = Request.Builder()
-            .post(gson.toJson(post).toRequestBody(jsonType))
-            .url("${BASE_URL}api/slow/posts")
-            .build()
-
-        client.newCall(request).enqueue(object : Callback {
-            override fun onResponse(call: Call, response: Response) {
-                val body = response.body.string()
-                try {
-                    val savedPost = gson.fromJson(body, Post::class.java)
-                    callback.onSuccess(savedPost)
-                } catch (e: Exception) {
-                    callback.onError(e)
+        apiService.likeById(id).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (response.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(RuntimeException("HTTP ${response.code()}"))
                 }
             }
 
-            override fun onFailure(call: Call, e: IOException) {
-                callback.onError(e)
+            override fun onFailure(call: Call<Post>, throwable: Throwable) {
+                callback.onError(throwable)
+            }
+        })
+    }
+
+    override fun unlikeById(id: Long, callback: PostRepository.ActionCallback) {
+        apiService.dislikeById(id).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (response.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(RuntimeException("HTTP ${response.code()}"))
+                }
+            }
+
+            override fun onFailure(call: Call<Post>, throwable: Throwable) {
+                callback.onError(throwable)
+            }
+        })
+    }
+
+    override fun shareById(id: Long, callback: PostRepository.ActionCallback) {
+        callback.onSuccess()
+    }
+
+    override fun viewsById(id: Long, callback: PostRepository.ActionCallback) {
+        callback.onSuccess()
+    }
+
+    override fun removeById(id: Long, callback: PostRepository.ActionCallback) {
+        apiService.removeById(id).enqueue(object : Callback<Unit> {
+            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
+                if (response.isSuccessful) {
+                    callback.onSuccess()
+                } else {
+                    callback.onError(RuntimeException("HTTP ${response.code()}"))
+                }
+            }
+
+            override fun onFailure(call: Call<Unit>, throwable: Throwable) {
+                callback.onError(throwable)
+            }
+        })
+    }
+
+    override fun save(post: Post, callback: PostRepository.SaveCallback) {
+        apiService.save(post).enqueue(object : Callback<Post> {
+            override fun onResponse(call: Call<Post>, response: Response<Post>) {
+                if (response.isSuccessful) {
+                    callback.onSuccess(response.body()!!)
+                } else {
+                    callback.onError(RuntimeException("HTTP ${response.code()}"))
+                }
+            }
+
+            override fun onFailure(call: Call<Post>, throwable: Throwable) {
+                callback.onError(throwable)
             }
         })
     }

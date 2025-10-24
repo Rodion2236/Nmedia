@@ -11,7 +11,7 @@ import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardviewPostBinding
 import ru.netology.nmedia.dto.Post
-import ru.netology.nmedia.repository.PostRepositoryNetwork
+import ru.netology.nmedia.util.AppConfig
 import ru.netology.nmedia.util.Utils
 import ru.netology.nmedia.util.formatCount
 
@@ -109,7 +109,7 @@ class PostViewHolder(
             }
 
             Glide.with(itemView)
-                .load("${PostRepositoryNetwork.AVATAR_BASE_URL}${post.authorAvatar}")
+                .load("${AppConfig.AVATAR_BASE_URL}${post.authorAvatar}")
                 .placeholder(R.drawable.ic_load_24)
                 .error(R.drawable.ic_broken_24)
                 .circleCrop()
@@ -119,7 +119,7 @@ class PostViewHolder(
             if (post.attachment != null && post.attachment.type == "IMAGE") {
                 binding.attachmentImage.visibility = View.VISIBLE
                 Glide.with(itemView)
-                    .load("${PostRepositoryNetwork.IMAGE_BASE_URL}${post.attachment.url}")
+                    .load("${AppConfig.IMAGE_BASE_URL}${post.attachment.url}")
                     .placeholder(R.drawable.ic_load_24)
                     .error(R.drawable.ic_broken_24  )
                     .timeout(10_000)

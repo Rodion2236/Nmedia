@@ -25,10 +25,12 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             manifestPlaceholders["usesCleartextTraffic"] = false
+            buildConfigField "String", "BASE_URL", '"https://netomedia.ru"'
         }
 
         debug {
             manifestPlaceholders["usesCleartextTraffic"] = true
+            buildConfigField "String", "BASE_URL", '"http://10.0.2.2:9999"'
         }
     }
     compileOptions {
@@ -39,13 +41,18 @@ android {
         jvmTarget = '11'
     }
 
-    buildFeatures.viewBinding = true
+    buildFeatures {
+        viewBinding true
+        buildConfig true
+    }
 }
 
 dependencies {
     def activity_version = "1.10.0"
     def lifecycle_version = "2.8.7"
     def room_version = "2.8.2"
+    def retrofit_version = "3.0.0"
+    def retrofitgson_version = "3.0.0"
 
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
@@ -54,8 +61,10 @@ dependencies {
     implementation libs.androidx.constraintlayout
     implementation libs.gson
 
-    implementation("com.squareup.okhttp3:okhttp:5.2.0")
+    implementation("com.squareup.okhttp3:okhttp:5.2.1")
     implementation 'com.squareup.okhttp3:logging-interceptor:5.2.1'
+    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitgson_version"
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0"
 

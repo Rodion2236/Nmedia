@@ -90,7 +90,11 @@ class FeedFragment : Fragment() {
             binding.progress.isVisible = state.loading
             binding.empty.isVisible = state.empty
             binding.errorGroup.isVisible = state.error
-            binding.swipeRefresh.isRefreshing = state.loading
+            if (state.error) {
+                binding.retry.setOnClickListener {
+                    state.onErrorRetry?.invoke()
+                }
+            }
         }
 
         binding.swipeRefresh.setOnRefreshListener {

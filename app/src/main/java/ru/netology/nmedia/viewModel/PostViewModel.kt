@@ -9,7 +9,6 @@ import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryNetwork
 import ru.netology.nmedia.util.SingleLiveEvent
-import kotlin.concurrent.thread
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -42,8 +41,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+            override fun onError(e: Throwable) {
+                _data.postValue(
+                    FeedModel(
+                        error = true,
+                        onErrorRetry = { load()
+                        }))
             }
         })
     }
@@ -56,8 +59,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 load()
             }
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+            override fun onError(e: Throwable) {
+                _data.postValue(
+                    FeedModel(
+                        error = true,
+                        onErrorRetry = { like(id)
+                        }))
             }
         }
 
@@ -74,8 +81,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 load()
             }
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+            override fun onError(e: Throwable) {
+                _data.postValue(
+                    FeedModel(
+                        error = true,
+                        onErrorRetry = { share(id)
+                        }))
             }
         })
     }
@@ -84,8 +95,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         repository.viewsById(id, object : PostRepository.ActionCallback {
             override fun onSuccess() {}
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+            override fun onError(e: Throwable) {
+                _data.postValue(
+                    FeedModel(
+                        error = true,
+                        onErrorRetry = { views(id)
+                        }))
             }
         })
     }
@@ -96,8 +111,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 load()
             }
 
-            override fun onError(e: Exception) {
-                _data.postValue(FeedModel(error = true))
+            override fun onError(e: Throwable) {
+                _data.postValue(
+                    FeedModel(
+                        error = true,
+                        onErrorRetry = { remove(id)
+                        }))
             }
         })
     }
@@ -108,13 +127,18 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             if (trimmed.isNotBlank() && trimmed != postToEdit.content) {
                 val postToSave = postToEdit.copy(content = trimmed)
                 repository.save(postToSave, object : PostRepository.SaveCallback {
-                    override fun onSuccess(savedPost: Post) {
+                    override fun onSuccess(post: Post) {
                         _postCreated.postValue(Unit)
                         edited.postValue(empty)
                     }
 
-                    override fun onError(e: Exception) {
-                        _data.postValue(FeedModel(error = true))
+                    override fun onError(e: Throwable) {
+                        _data.postValue(
+                            FeedModel(
+                                error = true,
+                                onErrorRetry = { save(content) }
+                            )
+                        )
                     }
                 })
             }
