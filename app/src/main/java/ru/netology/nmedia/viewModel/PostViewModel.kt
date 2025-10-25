@@ -35,7 +35,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun load() {
-        _data.postValue(FeedModel(loading = true))
+        _data.postValue(_data.value?.copy(loading = true))
         repository.getAllASync(object : PostRepository.GetAllCallback {
             override fun onSuccess(posts: List<Post>) {
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
@@ -43,10 +43,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
             override fun onError(e: Throwable) {
                 _data.postValue(
-                    FeedModel(
+                    _data.value?.copy(
+                        loading = false,
                         error = true,
-                        onErrorRetry = { load()
-                        }))
+                        onErrorRetry = { load() }
+                    )
+                )
             }
         })
     }
@@ -55,16 +57,22 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         val currentPost = _data.value?.posts?.find { it.id == id } ?: return
 
         val callback = object : PostRepository.ActionCallback {
-            override fun onSuccess() {
-                load()
+            override fun onSuccess(post: Post) {
+                val posts = _data.value?.posts.orEmpty().toMutableList()
+                val index = posts.indexOfFirst { it.id == id }
+                if (index != -1) {
+                    posts[index] = post
+                }
+                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
             override fun onError(e: Throwable) {
                 _data.postValue(
-                    FeedModel(
+                    _data.value?.copy(
                         error = true,
-                        onErrorRetry = { like(id)
-                        }))
+                        onErrorRetry = { like(id) }
+                    )
+                )
             }
         }
 
@@ -76,47 +84,51 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun share(id: Long) {
-        repository.shareById(id, object : PostRepository.ActionCallback {
+        repository.shareById(id, object : PostRepository.SimpleActionCallback {
             override fun onSuccess() {
                 load()
             }
 
             override fun onError(e: Throwable) {
                 _data.postValue(
-                    FeedModel(
+                    _data.value?.copy(
                         error = true,
-                        onErrorRetry = { share(id)
-                        }))
+                        onErrorRetry = { share(id) }
+                    )
+                )
             }
         })
     }
 
     fun views(id: Long) {
-        repository.viewsById(id, object : PostRepository.ActionCallback {
+        repository.viewsById(id, object : PostRepository.SimpleActionCallback {
             override fun onSuccess() {}
 
             override fun onError(e: Throwable) {
                 _data.postValue(
-                    FeedModel(
+                    _data.value?.copy(
                         error = true,
-                        onErrorRetry = { views(id)
-                        }))
+                        onErrorRetry = { views(id) }
+                    )
+                )
             }
         })
     }
-
     fun remove(id: Long) {
-        repository.removeById(id, object : PostRepository.ActionCallback {
+        repository.removeById(id, object : PostRepository.SimpleActionCallback {
             override fun onSuccess() {
-                load()
+                val posts = _data.value?.posts.orEmpty().toMutableList()
+                posts.removeIf { it.id == id }
+                _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
             override fun onError(e: Throwable) {
                 _data.postValue(
-                    FeedModel(
+                    _data.value?.copy(
                         error = true,
-                        onErrorRetry = { remove(id)
-                        }))
+                        onErrorRetry = { remove(id) }
+                    )
+                )
             }
         })
     }
@@ -128,13 +140,21 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 val postToSave = postToEdit.copy(content = trimmed)
                 repository.save(postToSave, object : PostRepository.SaveCallback {
                     override fun onSuccess(post: Post) {
+                        val posts = _data.value?.posts.orEmpty().toMutableList()
+                        val index = posts.indexOfFirst { it.id == post.id }
+                        if (index == -1) {
+                            posts.add(0, post)
+                        } else {
+                            posts[index] = post
+                        }
+                        _data.postValue(FeedModel(posts = posts))
                         _postCreated.postValue(Unit)
                         edited.postValue(empty)
                     }
 
                     override fun onError(e: Throwable) {
                         _data.postValue(
-                            FeedModel(
+                            _data.value?.copy(
                                 error = true,
                                 onErrorRetry = { save(content) }
                             )

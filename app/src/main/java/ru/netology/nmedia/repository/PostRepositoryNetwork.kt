@@ -30,7 +30,12 @@ class PostRepositoryNetwork : PostRepository {
         apiService.likeById(id).enqueue(object : Callback<Post> {
             override fun onResponse(call: Call<Post>, response: Response<Post>) {
                 if (response.isSuccessful) {
-                    callback.onSuccess()
+                    val post = response.body()
+                    if (post != null) {
+                        callback.onSuccess(post)
+                    } else {
+                        callback.onError(Exception("Empty body"))
+                    }
                 } else {
                     callback.onError(RuntimeException("HTTP ${response.code()}"))
                 }
@@ -46,7 +51,12 @@ class PostRepositoryNetwork : PostRepository {
         apiService.dislikeById(id).enqueue(object : Callback<Post> {
             override fun onResponse(call: Call<Post>, response: Response<Post>) {
                 if (response.isSuccessful) {
-                    callback.onSuccess()
+                    val post = response.body()
+                    if (post != null) {
+                        callback.onSuccess(post)
+                    } else {
+                        callback.onError(Exception("Empty body"))
+                    }
                 } else {
                     callback.onError(RuntimeException("HTTP ${response.code()}"))
                 }
@@ -58,15 +68,15 @@ class PostRepositoryNetwork : PostRepository {
         })
     }
 
-    override fun shareById(id: Long, callback: PostRepository.ActionCallback) {
+    override fun shareById(id: Long, callback: PostRepository.SimpleActionCallback) {
         callback.onSuccess()
     }
 
-    override fun viewsById(id: Long, callback: PostRepository.ActionCallback) {
+    override fun viewsById(id: Long, callback: PostRepository.SimpleActionCallback) {
         callback.onSuccess()
     }
 
-    override fun removeById(id: Long, callback: PostRepository.ActionCallback) {
+    override fun removeById(id: Long, callback: PostRepository.SimpleActionCallback) {
         apiService.removeById(id).enqueue(object : Callback<Unit> {
             override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
                 if (response.isSuccessful) {
