@@ -1,5 +1,6 @@
 package ru.netology.nmedia.dto
 
+import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -17,6 +18,8 @@ data class PostEntity(
     val views: Int = 0,
     val video: String? = null,
     val viewed: Boolean = false,
+    @Embedded
+    val attachment: AttachmentEmbeddable? = null,
 
     val ownedByMe: Boolean = true,
     val sent: Boolean = false
@@ -33,7 +36,13 @@ data class PostEntity(
         viewed,
         views,
         video,
-        null,
+        attachment?.let {
+            Attachment(
+                url = it.url,
+                description = it.description,
+                type = it.type
+            )
+        },
         sent
     )
 
@@ -50,6 +59,14 @@ data class PostEntity(
             dto.views,
             dto.video,
             dto.viewed,
+            dto.attachment?.let {
+                AttachmentEmbeddable(
+                    url = it.url,
+                    description = it.description,
+                    type = it.type
+                )
+            },
+
             ownedByMe = true,
             sent = true
         )
@@ -66,3 +83,8 @@ data class PostEntity(
         )
     }
 }
+data class AttachmentEmbeddable(
+    val url: String,
+    val description: String,
+    val type: String
+)
