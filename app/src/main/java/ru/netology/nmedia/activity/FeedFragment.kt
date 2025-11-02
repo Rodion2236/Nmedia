@@ -10,6 +10,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.snackbar.Snackbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
@@ -81,27 +82,31 @@ class FeedFragment : Fragment() {
                     }
                 )
             }
+
+            override fun onRetrySend(post: Post) {
+                viewmodel.retrySend(post)
+            }
         })
 
         binding.list.adapter = adapter
 
         viewmodel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
-            binding.progress.isVisible = state.loading
             binding.empty.isVisible = state.empty
-            binding.errorGroup.isVisible = state.error
+        }
+
+        viewmodel.state.observe(viewLifecycleOwner) { state ->
             if (state.error) {
-                binding.retry.setOnClickListener {
-                    state.onErrorRetry?.invoke()
-                }
+                Snackbar.make(binding.root, R.string.something_went_wrong, Snackbar.LENGTH_SHORT)
+                    .setAction(R.string.retry) {
+                        viewmodel.load()
+                    }
+                    .show()
             }
+            binding.swipeRefresh.isRefreshing = state.loading
         }
 
         binding.swipeRefresh.setOnRefreshListener {
-            viewmodel.load()
-        }
-
-        binding.retry.setOnClickListener {
             viewmodel.load()
         }
 

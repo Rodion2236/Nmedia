@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -23,6 +24,7 @@ interface OnPostInteractionListener {
     fun onEdit(post: Post)
     fun onVideoClick(post: Post)
     fun onPostClick(post: Post)
+    fun onRetrySend(post: Post)
 }
 
 class PostAdapter(
@@ -52,6 +54,10 @@ class PostViewHolder(
 ): RecyclerView.ViewHolder(binding.root) {
     fun bind(post: Post) {
         binding.apply {
+            binding.syncStatus.isVisible = !post.sent
+            binding.syncStatus.setImageResource(
+                if (!post.sent) R.drawable.ic_progress_sync_24 else R.drawable.ic_check
+            )
             author.text = post.author
             binding.published.text = Utils.formatPublished(post.published)
             content.text = post.content
@@ -78,6 +84,8 @@ class PostViewHolder(
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.menu_post)
+                    menu.findItem(R.id.retry)?.isVisible = !post.sent
+
                     setOnMenuItemClickListener { item ->
                         when(item.itemId) {
                             R.id.remove -> {
@@ -86,6 +94,10 @@ class PostViewHolder(
                             }
                             R.id.edit -> {
                                 onPostInteractionListener.onEdit(post)
+                                true
+                            }
+                            R.id.retry -> {
+                                onPostInteractionListener.onRetrySend(post)
                                 true
                             }
                             else -> false

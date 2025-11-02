@@ -5,9 +5,10 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "posts")
 data class PostEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long = 0,
+    @PrimaryKey
+    val id: Long,
     val author: String,
+    val authorAvatar: String? = null,
     val content: String,
     val published: Long,
     val likes: Int = 0,
@@ -15,5 +16,53 @@ data class PostEntity(
     val shares: Int = 0,
     val views: Int = 0,
     val video: String? = null,
-    val viewed: Boolean = false
-)
+    val viewed: Boolean = false,
+
+    val ownedByMe: Boolean = true,
+    val sent: Boolean = false
+) {
+    fun toDto() = Post(
+        id,
+        author,
+        authorAvatar,
+        content,
+        published,
+        likes,
+        likedByMe,
+        shares,
+        viewed,
+        views,
+        video,
+        null,
+        sent
+    )
+
+    companion object {
+        fun fromDto(dto: Post) = PostEntity(
+            dto.id,
+            dto.author,
+            dto.authorAvatar,
+            dto.content,
+            dto.published,
+            dto.likes,
+            dto.likedByMe,
+            dto.shares,
+            dto.views,
+            dto.video,
+            dto.viewed,
+            ownedByMe = true,
+            sent = true
+        )
+
+        fun tempId(): Long = -System.currentTimeMillis()
+
+        fun newLocalPost(content: String): PostEntity = PostEntity(
+            id = tempId(),
+            author = "Я",
+            content = content,
+            published = System.currentTimeMillis(),
+            ownedByMe = true,
+            sent = false
+        )
+    }
+}

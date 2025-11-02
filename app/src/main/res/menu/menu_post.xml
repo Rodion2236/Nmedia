@@ -7,4 +7,8 @@
     <item
         android:id="@+id/edit"
         android:title="@string/menu_edit"/>
+    <item
+        android:id="@+id/retry"
+        android:title="@string/retry"
+        android:visible="false" />
 </menu>

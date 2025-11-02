@@ -1,110 +1,91 @@
 package ru.netology.nmedia.repository
 
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.map
 import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.PostEntity
 
-class PostRepositoryNetwork : PostRepository {
+class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
 
-    private val apiService = PostApi.retrofitService
-
-    override fun getAllASync(callback: PostRepository.GetAllCallback) {
-        apiService.getAll().enqueue(object : Callback<List<Post>> {
-            override fun onResponse(call: Call<List<Post>>, response: Response<List<Post>>) {
-                if (response.isSuccessful) {
-                    callback.onSuccess(response.body() ?: emptyList())
-                } else {
-                    callback.onError(RuntimeException("HTTP ${response.code()}"))
-                }
-            }
-
-            override fun onFailure(call: Call<List<Post>>, throwable: Throwable) {
-                callback.onError(throwable)
-            }
-        })
+    override val data: LiveData<List<Post>> = dao.getAll().map {
+        it.map(PostEntity::toDto)
     }
 
-    override fun likeById(id: Long, callback: PostRepository.ActionCallback) {
-        apiService.likeById(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (response.isSuccessful) {
-                    val post = response.body()
-                    if (post != null) {
-                        callback.onSuccess(post)
-                    } else {
-                        callback.onError(Exception("Empty body"))
-                    }
-                } else {
-                    callback.onError(RuntimeException("HTTP ${response.code()}"))
-                }
-            }
-
-            override fun onFailure(call: Call<Post>, throwable: Throwable) {
-                callback.onError(throwable)
-            }
-        })
+    override suspend fun getAllASync() {
+        try {
+            val posts = PostApi.retrofitService.getAll()
+            dao.insert(posts.map(PostEntity::fromDto))
+        } catch (e: Exception) {
+            throw RuntimeException("Load failed", e)
+        }
     }
 
-    override fun unlikeById(id: Long, callback: PostRepository.ActionCallback) {
-        apiService.dislikeById(id).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (response.isSuccessful) {
-                    val post = response.body()
-                    if (post != null) {
-                        callback.onSuccess(post)
-                    } else {
-                        callback.onError(Exception("Empty body"))
-                    }
-                } else {
-                    callback.onError(RuntimeException("HTTP ${response.code()}"))
-                }
-            }
-
-            override fun onFailure(call: Call<Post>, throwable: Throwable) {
-                callback.onError(throwable)
-            }
-        })
+    override suspend fun likeById(id: Long): Post {
+        return try {
+            dao.likeById(id)
+            val post = PostApi.retrofitService.likeById(id)
+            dao.insert(PostEntity.fromDto(post))
+            post
+        } catch (e: Exception) {
+            throw RuntimeException("Like failed", e)
+        }
     }
 
-    override fun shareById(id: Long, callback: PostRepository.SimpleActionCallback) {
-        callback.onSuccess()
+    override suspend fun unlikeById(id: Long): Post {
+        return try {
+            dao.unlikeById(id)
+            val post = PostApi.retrofitService.dislikeById(id)
+            dao.insert(PostEntity.fromDto(post))
+            post
+        } catch (e: Exception) {
+            throw RuntimeException("Unlike failed", e)
+        }
     }
 
-    override fun viewsById(id: Long, callback: PostRepository.SimpleActionCallback) {
-        callback.onSuccess()
+    override suspend fun shareById(id: Long) {
+        dao.shareById(id)
     }
 
-    override fun removeById(id: Long, callback: PostRepository.SimpleActionCallback) {
-        apiService.removeById(id).enqueue(object : Callback<Unit> {
-            override fun onResponse(call: Call<Unit>, response: Response<Unit>) {
-                if (response.isSuccessful) {
-                    callback.onSuccess()
-                } else {
-                    callback.onError(RuntimeException("HTTP ${response.code()}"))
-                }
-            }
-
-            override fun onFailure(call: Call<Unit>, throwable: Throwable) {
-                callback.onError(throwable)
-            }
-        })
+    override suspend fun viewsById(id: Long) {
+        dao.viewsById(id)
     }
 
-    override fun save(post: Post, callback: PostRepository.SaveCallback) {
-        apiService.save(post).enqueue(object : Callback<Post> {
-            override fun onResponse(call: Call<Post>, response: Response<Post>) {
-                if (response.isSuccessful) {
-                    callback.onSuccess(response.body()!!)
-                } else {
-                    callback.onError(RuntimeException("HTTP ${response.code()}"))
-                }
-            }
+    override suspend fun removeById(id: Long) {
+        return try {
+            dao.deleteById(id)
+            PostApi.retrofitService.removeById(id)
+        } catch (e: Exception) {
+            throw RuntimeException("Remove failed", e)
+        }
+    }
 
-            override fun onFailure(call: Call<Post>, throwable: Throwable) {
-                callback.onError(throwable)
-            }
-        })
+    override suspend fun save(post: Post): Post {
+        val tempId = PostEntity.tempId()
+        val localPost = PostEntity.newLocalPost(post.content)
+        dao.insert(localPost)
+
+        return try {
+            val remotePost = PostApi.retrofitService.save(post)
+            dao.deleteById(tempId)
+            val finalPost = PostEntity.fromDto(remotePost)
+            dao.insert(finalPost)
+            remotePost
+        } catch (e: Exception) {
+            throw RuntimeException("Save failed", e)
+        }
+    }
+
+    override suspend fun insertLocal(post: PostEntity) {
+        dao.insert(post)
+    }
+
+    override suspend fun saveRemote(post: Post): Post {
+        return try {
+            PostApi.retrofitService.save(post)
+        } catch (e: Exception) {
+            throw RuntimeException("Save failed(server)", e)
+        }
     }
 }

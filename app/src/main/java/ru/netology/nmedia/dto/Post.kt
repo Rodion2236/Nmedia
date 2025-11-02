@@ -12,7 +12,9 @@ data class Post(
     val viewed: Boolean = false,
     val views: Int = 0,
     val video: String? = null,
-    val attachment: Attachment? = null
+    val attachment: Attachment? = null,
+
+    val sent: Boolean = true
 )
 
 data class Attachment(

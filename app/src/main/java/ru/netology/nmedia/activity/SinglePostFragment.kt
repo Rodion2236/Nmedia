@@ -82,8 +82,8 @@ class SinglePostFragment : Fragment() {
                         startActivity(intent)
                     }
 
-                    override fun onPostClick(post: Post) {
-                    }
+                    override fun onPostClick(post: Post) {}
+                    override fun onRetrySend(post: Post) {}
                 }).bind(post)
             } else {
                 findNavController().navigateUp()
