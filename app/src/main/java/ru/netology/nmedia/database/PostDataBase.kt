@@ -9,7 +9,7 @@ import ru.netology.nmedia.dto.PostEntity
 
 @Database(
     entities = [PostEntity::class],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class PostDatabase : RoomDatabase() {

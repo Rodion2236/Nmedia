@@ -22,7 +22,8 @@ data class PostEntity(
     val attachment: AttachmentEmbeddable? = null,
 
     val ownedByMe: Boolean = true,
-    val sent: Boolean = false
+    val sent: Boolean = false,
+    val timeSaved: Long
 ) {
     fun toDto() = Post(
         id,
@@ -68,7 +69,8 @@ data class PostEntity(
             },
 
             ownedByMe = true,
-            sent = true
+            sent = true,
+            timeSaved = dto.published
         )
 
         fun tempId(): Long = -System.currentTimeMillis()
@@ -79,7 +81,8 @@ data class PostEntity(
             content = content,
             published = System.currentTimeMillis(),
             ownedByMe = true,
-            sent = false
+            sent = false,
+            timeSaved = System.currentTimeMillis()
         )
     }
 }

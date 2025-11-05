@@ -6,7 +6,7 @@ import ru.netology.nmedia.dto.PostEntity
 
 @Dao
 interface PostDao {
-    @Query("SELECT * FROM posts ORDER BY id DESC")
+    @Query("SELECT * FROM posts ORDER BY timeSaved DESC")
     fun getAll(): LiveData<List<PostEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
@@ -20,6 +20,9 @@ interface PostDao {
 
     @Query("DELETE FROM posts WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    @Query("UPDATE posts SET likedByMe = :likedByMe, likes = :likes WHERE id = :id")
+    suspend fun updateLikedStatus(id: Long, likedByMe: Boolean, likes: Int)
 
     @Query("UPDATE posts SET likedByMe = CASE WHEN likedByMe = 1 THEN 0 ELSE 1 END, likes = likes + CASE WHEN likedByMe = 1 THEN -1 ELSE 1 END WHERE id = :id")
     suspend fun likeById(id: Long)
