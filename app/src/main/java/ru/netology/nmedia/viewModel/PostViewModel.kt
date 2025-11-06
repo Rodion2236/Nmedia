@@ -63,11 +63,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    private val pendingLikeActions = mutableSetOf<Long>()
-
     fun like(id: Long) = viewModelScope.launch {
-        if (pendingLikeActions.contains(id)) return@launch
-        pendingLikeActions.add(id)
         try {
             val currentPost = data.value?.posts?.find { it.id == id } ?: return@launch
             if (currentPost.likedByMe) {
@@ -76,15 +72,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 repository.likeById(id)
             }
         } catch (_: Exception) {
-            val currentPost = data.value?.posts?.find { it.id == id } ?: return@launch
-            val postToBack = currentPost.copy(likedByMe = !currentPost.likedByMe)
-            val entity = PostEntity.fromDto(postToBack)
-            repository.insertLocal(entity)
             _state.value = _state.value?.copy(
                 error = true
             )
-        } finally {
-            pendingLikeActions.remove(id)
         }
     }
 

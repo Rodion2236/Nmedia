@@ -24,22 +24,20 @@ class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
 
     override suspend fun likeById(id: Long): Post {
         return try {
-            dao.updateLikedStatus(id = id, likedByMe = true, likes = 0)
-            val post = PostApi.retrofitService.likeById(id)
-            dao.updateLikedStatus(id = post.id, likedByMe = post.likedByMe, likes = post.likes)
-            post
+            dao.toggleLike(id)
+            PostApi.retrofitService.likeById(id)
         } catch (e: Exception) {
+            dao.toggleLike(id)
             throw RuntimeException("Like failed", e)
         }
     }
 
     override suspend fun unlikeById(id: Long): Post {
         return try {
-            dao.updateLikedStatus(id = id, likedByMe = false, likes = 0)
-            val post = PostApi.retrofitService.dislikeById(id)
-            dao.updateLikedStatus(id = post.id, likedByMe = post.likedByMe, likes = post.likes)
-            post
+            dao.unlikeById(id)
+            PostApi.retrofitService.dislikeById(id)
         } catch (e: Exception) {
+            dao.unlikeById(id)
             throw RuntimeException("Unlike failed", e)
         }
     }
