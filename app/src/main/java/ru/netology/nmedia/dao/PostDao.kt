@@ -1,7 +1,10 @@
 package ru.netology.nmedia.dao
 
-import androidx.lifecycle.LiveData
-import androidx.room.*
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.PostEntity
 
@@ -22,8 +25,6 @@ interface PostDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)
 
-    @Update
-    suspend fun update(post: PostEntity)
 
     @Query("DELETE FROM posts WHERE id = :id")
     suspend fun deleteById(id: Long)
