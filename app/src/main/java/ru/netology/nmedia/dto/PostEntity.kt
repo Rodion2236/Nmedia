@@ -23,7 +23,9 @@ data class PostEntity(
 
     val ownedByMe: Boolean = true,
     val sent: Boolean = false,
-    val timeSaved: Long
+    val timeSaved: Long,
+
+    val showInFeed: Boolean = true
 ) {
     fun toDto() = Post(
         id,
@@ -44,11 +46,12 @@ data class PostEntity(
                 type = it.type
             )
         },
-        sent
+        sent,
+        showInFeed
     )
 
     companion object {
-        fun fromDto(dto: Post) = PostEntity(
+        fun fromDto(dto: Post, showInFeed: Boolean = true) = PostEntity(
             dto.id,
             dto.author,
             dto.authorAvatar,
@@ -70,7 +73,8 @@ data class PostEntity(
 
             ownedByMe = true,
             sent = true,
-            timeSaved = dto.published
+            timeSaved = dto.published,
+            showInFeed = showInFeed
         )
 
         fun tempId(): Long = -System.currentTimeMillis()

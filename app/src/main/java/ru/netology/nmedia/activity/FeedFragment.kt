@@ -9,8 +9,12 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
@@ -93,6 +97,20 @@ class FeedFragment : Fragment() {
         viewmodel.data.observe(viewLifecycleOwner) { state ->
             adapter.submitList(state.posts)
             binding.empty.isVisible = state.empty
+        }
+
+        viewmodel.newerCount.observe(viewLifecycleOwner) { count ->
+            binding.showNewPosts.isVisible = count > 0
+        }
+
+        binding.showNewPosts.setOnClickListener {
+            binding.showNewPosts.isVisible = false
+            viewmodel.showNewPosts()
+
+            lifecycleScope.launch {
+                delay(100)
+                binding.list.smoothScrollToPosition(0)
+            }
         }
 
         viewmodel.state.observe(viewLifecycleOwner) { state ->

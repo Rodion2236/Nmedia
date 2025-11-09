@@ -14,7 +14,8 @@ data class Post(
     val video: String? = null,
     val attachment: Attachment? = null,
 
-    val sent: Boolean = true
+    val sent: Boolean = true,
+    val showInFeed: Boolean = true
 )
 
 data class Attachment(

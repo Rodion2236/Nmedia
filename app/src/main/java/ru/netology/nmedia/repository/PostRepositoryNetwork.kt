@@ -1,16 +1,45 @@
 package ru.netology.nmedia.repository
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.map
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
+import ru.netology.nmedia.error.ApiError
+import ru.netology.nmedia.error.AppError
 
 class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
 
-    override val data: LiveData<List<Post>> = dao.getAll().map {
-        it.map(PostEntity::toDto)
+    override val data = dao.getAll().map { it ->
+        it.map {
+            it.toDto()
+        }
+    }.flowOn(Dispatchers.Default)
+
+    override fun getNewer(id: Long): Flow<Int> = flow {
+        while (true) {
+            delay(10_000L)
+            val response = PostApi.retrofitService.getNewer(id)
+            if (!response.isSuccessful) {
+                throw ApiError(response.code(), response.message())
+            }
+            val body = response.body() ?: throw ApiError(response.code(), response.message())
+            dao.insert(body.map { PostEntity.fromDto(it, showInFeed = false) })
+
+            val hiddenCount = dao.getHiddenPostsCount()
+            emit(hiddenCount)
+        }
+    } .catch { e -> throw AppError.from(e) }
+        .flowOn(Dispatchers.Default)
+
+    override suspend fun showAllNewPosts() {
+        dao.showAllNewPosts()
     }
 
     override suspend fun getAllASync() {
@@ -34,10 +63,10 @@ class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
 
     override suspend fun unlikeById(id: Long): Post {
         return try {
-            dao.unlikeById(id)
+            dao.toggleLike(id)
             PostApi.retrofitService.dislikeById(id)
         } catch (e: Exception) {
-            dao.unlikeById(id)
+            dao.toggleLike(id)
             throw RuntimeException("Unlike failed", e)
         }
     }

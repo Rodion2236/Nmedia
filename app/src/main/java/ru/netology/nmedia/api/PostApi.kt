@@ -2,6 +2,7 @@ package ru.netology.nmedia.api
 
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.Body
@@ -34,9 +35,6 @@ interface PostApi {
     @GET("posts")
     suspend fun getAll(): List<Post>
 
-    @GET("posts/{id}")
-    suspend fun getById(@Path("id") id: Long): Post
-
     @POST("posts")
     suspend fun save(@Body post: Post): Post
 
@@ -48,6 +46,9 @@ interface PostApi {
 
     @DELETE("posts/{id}/likes")
     suspend fun dislikeById(@Path("id") id: Long): Post
+
+    @GET("posts/{id}/newer")
+    suspend fun getNewer(@Path("id") id: Long): Response<List<Post>>
 
     companion object {
         val retrofitService: PostApi by lazy {
