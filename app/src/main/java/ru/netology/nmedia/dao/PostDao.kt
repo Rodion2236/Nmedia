@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.PostEntity
 
@@ -15,6 +14,9 @@ interface PostDao {
 
     @Query("UPDATE posts SET showInFeed = 1 WHERE showInFeed = 0")
     suspend fun showAllNewPosts()
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertBackground(posts: List<PostEntity>)
 
     @Query("SELECT COUNT(*) FROM posts WHERE showInFeed = 0")
     suspend fun getHiddenPostsCount(): Int

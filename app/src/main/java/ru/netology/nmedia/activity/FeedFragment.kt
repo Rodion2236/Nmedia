@@ -106,8 +106,7 @@ class FeedFragment : Fragment() {
             binding.showNewPosts.isVisible = false
             viewmodel.showNewPosts()
 
-            lifecycleScope.launch {
-                delay(100)
+            binding.list.post {
                 binding.list.smoothScrollToPosition(0)
             }
         }
