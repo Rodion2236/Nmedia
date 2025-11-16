@@ -19,4 +19,6 @@
     <string name="something_went_wrong">Что-то пошло не так</string>
     <string name="retry">Повторить</string>
     <string name="new_posts">Свежие записи</string>
+    <string name="image_picker_error">ошибка ImagePicker</string>
+    <string name="foto">Фото</string>
 </resources>

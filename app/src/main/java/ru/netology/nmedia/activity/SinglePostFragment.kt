@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.appbar.MaterialToolbar
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostViewHolder
@@ -84,6 +85,12 @@ class SinglePostFragment : Fragment() {
 
                     override fun onPostClick(post: Post) {}
                     override fun onRetrySend(post: Post) {}
+                    override fun onImageClick(url: String) {
+                        findNavController().navigate(
+                            R.id.action_singlePostFragment_to_imageViewerFragment,
+                            Bundle().apply { putString("imageUrl", url) }
+                        )
+                    }
                 }).bind(post)
             } else {
                 findNavController().navigateUp()

@@ -53,6 +53,7 @@ dependencies {
     def room_version = "2.8.2"
     def retrofit_version = "3.0.0"
     def retrofitgson_version = "3.0.0"
+    def imagepicker_version = "2.1"
 
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
@@ -82,6 +83,9 @@ dependencies {
     implementation platform('com.google.firebase:firebase-bom:34.2.0')
     implementation "com.google.firebase:firebase-messaging-ktx:24.1.2"
     implementation "com.google.android.gms:play-services-base:18.7.2"
+
+    implementation "com.github.dhaval2404:imagepicker:$imagepicker_version"
+    implementation "com.github.yalantis:ucrop:2.2.11"
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit

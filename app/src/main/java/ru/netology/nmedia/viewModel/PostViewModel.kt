@@ -1,6 +1,7 @@
 package ru.netology.nmedia.viewModel
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -16,9 +17,11 @@ import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
+import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
 import ru.netology.nmedia.repository.PostRepositoryNetwork
 import ru.netology.nmedia.util.SingleLiveEvent
+import java.io.File
 
 class PostViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -51,6 +54,10 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _postCreated = SingleLiveEvent<Unit>()
     val postCreated: LiveData<Unit>
         get() = _postCreated
+
+    private val _photo = MutableLiveData<PhotoModel?>(null)
+    val photo: LiveData<PhotoModel?>
+        get() = _photo
 
     init {
         load()
@@ -126,7 +133,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 val trimmed = content.trim()
                 if (trimmed.isNotBlank() && trimmed != postToEdit.content) {
                     val postToSave = postToEdit.copy(content = trimmed)
-                    repository.save(postToSave)
+                    repository.save(postToSave, _photo.value?.file)
                     _postCreated.postValue(Unit)
                     edited.postValue(empty)
                 }
@@ -155,5 +162,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         if (postToEdit != null) {
             edited.value = postToEdit
         }
+    }
+
+    fun changePhoto(uri: Uri, file: File) {
+        _photo.value = PhotoModel(uri, file)
+    }
+
+    fun removePhoto() {
+        _photo.value = null
     }
 }

@@ -2,13 +2,23 @@ package ru.netology.nmedia.activity
 
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.net.toFile
+import androidx.core.view.MenuProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.github.dhaval2404.imagepicker.ImagePicker
+import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.util.postIdArg
 import ru.netology.nmedia.util.textArg
@@ -19,6 +29,7 @@ class NewPostFragment : Fragment() {
     private val viewModel: PostViewModel by activityViewModels {
         defaultViewModelProviderFactory
     }
+    private val MAX_SIZE_PX = 2048
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,12 +55,69 @@ class NewPostFragment : Fragment() {
             insets
         }
 
-        binding.add.setOnClickListener {
-            val content = binding.content.text.toString().trim()
-            if (content.isNotBlank()) {
-                viewModel.save(content)
-                findNavController().navigateUp()
+        requireActivity().addMenuProvider(
+            object : MenuProvider {
+                override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                    menuInflater.inflate(R.menu.menu_new_post, menu)
+                }
+
+                override fun onMenuItemSelected(menuItem: MenuItem): Boolean =
+                    when (menuItem.itemId) {
+                        R.id.save -> {
+                            val content = binding.content.text.toString().trim()
+                            if (content.isNotBlank()) {
+                                viewModel.save(content)
+                                findNavController().navigateUp()
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        else -> false
+                    }
+            },
+            viewLifecycleOwner
+        )
+
+        val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            val uri = result.data?.data
+            if (result.resultCode == ImagePicker.RESULT_ERROR) {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.image_picker_error),
+                    Toast.LENGTH_SHORT).show()
+            } else if (uri != null) {
+                viewModel.changePhoto(uri, uri.toFile())
             }
+        }
+
+        viewModel.photo.observe(viewLifecycleOwner) { photo ->
+            if (photo != null) {
+                binding.previewContainer.isVisible = true
+                binding.preview.setImageURI(photo.uri)
+            } else {
+                binding.previewContainer.isVisible = false
+            }
+        }
+
+        binding.removePhoto.setOnClickListener {
+            viewModel.removePhoto()
+        }
+
+        binding.takePhoto.setOnClickListener {
+            ImagePicker.with(this)
+                .cameraOnly()
+                .crop()
+                .maxResultSize(MAX_SIZE_PX, MAX_SIZE_PX)
+                .createIntent(imagePickerLauncher::launch)
+        }
+
+        binding.pickPhoto.setOnClickListener {
+            ImagePicker.with(this)
+                .galleryOnly()
+                .crop()
+                .maxResultSize(MAX_SIZE_PX, MAX_SIZE_PX)
+                .createIntent(imagePickerLauncher::launch)
         }
 
         viewModel.postCreated.observe(viewLifecycleOwner) {

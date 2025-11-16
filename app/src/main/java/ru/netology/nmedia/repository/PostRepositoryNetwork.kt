@@ -7,12 +7,18 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dto.Attachment
+import ru.netology.nmedia.dto.AttachmentType
+import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
 import ru.netology.nmedia.error.ApiError
 import ru.netology.nmedia.error.AppError
+import java.io.File
 
 class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
 
@@ -88,13 +94,21 @@ class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
         }
     }
 
-    override suspend fun save(post: Post): Post {
+    override suspend fun save(post: Post, image: File?): Post {
         val tempId = PostEntity.tempId()
         val localPost = PostEntity.newLocalPost(post.content)
         dao.insert(localPost)
 
         return try {
-            val remotePost = PostApi.retrofitService.save(post)
+            val media = image?.let { upload(it) }
+            val postToSave = if (media != null) {
+                post.copy(attachment = Attachment(url = media.id, type = AttachmentType.IMAGE))
+            } else {
+                post
+            }
+
+            val remotePost = PostApi.retrofitService.save(postToSave)
+
             dao.deleteById(tempId)
             val finalPost = PostEntity.fromDto(remotePost)
             dao.insert(finalPost)
@@ -103,6 +117,15 @@ class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
             throw RuntimeException("Save failed", e)
         }
     }
+
+    private suspend fun upload(file: File): Media =
+        PostApi.retrofitService.upload(
+            MultipartBody.Part.createFormData(
+                "file",
+                file.name,
+                file.asRequestBody()
+            )
+        )
 
     override suspend fun insertLocal(post: PostEntity) {
         dao.insert(post)

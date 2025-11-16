@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardviewPostBinding
+import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.util.AppConfig
 import ru.netology.nmedia.util.Utils
@@ -25,6 +26,7 @@ interface OnPostInteractionListener {
     fun onVideoClick(post: Post)
     fun onPostClick(post: Post)
     fun onRetrySend(post: Post)
+    fun onImageClick(url: String)
 }
 
 class PostAdapter(
@@ -75,8 +77,8 @@ class PostViewHolder(
                 onPostInteractionListener.onShare(post)
             }
 
-                if (!post.viewed) {
-                    onPostInteractionListener.onView(post)
+            if (!post.viewed) {
+                onPostInteractionListener.onView(post)
             }
 
             viewsTv.text = formatCount(post.views)
@@ -87,7 +89,7 @@ class PostViewHolder(
                     menu.findItem(R.id.retry)?.isVisible = !post.sent
 
                     setOnMenuItemClickListener { item ->
-                        when(item.itemId) {
+                        when (item.itemId) {
                             R.id.remove -> {
                                 onPostInteractionListener.onRemove(post)
                                 true
@@ -128,16 +130,28 @@ class PostViewHolder(
                 .timeout(10_000)
                 .into(binding.avatar)
 
-            if (post.attachment != null && post.attachment.type == "IMAGE") {
+            val isImage = when (post.attachment?.type) {
+                AttachmentType.IMAGE -> true
+                else -> false
+            }
+
+            if (isImage) {
                 binding.attachmentImage.visibility = View.VISIBLE
                 Glide.with(itemView)
-                    .load("${AppConfig.IMAGE_BASE_URL}${post.attachment.url}")
+                    .load("${AppConfig.IMAGE_BASE_URL}${post.attachment?.url}")
                     .placeholder(R.drawable.ic_load_24)
-                    .error(R.drawable.ic_broken_24  )
+                    .error(R.drawable.ic_broken_24)
                     .timeout(10_000)
                     .into(binding.attachmentImage)
+
+                binding.attachmentImage.setOnClickListener {
+                    post.attachment?.url?.let { url ->
+                        onPostInteractionListener.onImageClick(url)
+                    }
+                }
             } else {
                 binding.attachmentImage.visibility = View.GONE
+                binding.attachmentImage.setOnClickListener(null)
             }
         }
     }

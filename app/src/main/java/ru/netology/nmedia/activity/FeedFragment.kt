@@ -89,6 +89,13 @@ class FeedFragment : Fragment() {
             override fun onRetrySend(post: Post) {
                 viewmodel.retrySend(post)
             }
+
+            override fun onImageClick(url: String) {
+                findNavController().navigate(
+                    R.id.action_feedFragment_to_imageViewerFragment,
+                    Bundle().apply { putString("imageUrl", url) }
+                )
+            }
         })
 
         binding.list.adapter = adapter

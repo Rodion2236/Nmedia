@@ -18,4 +18,6 @@
     <string name="something_went_wrong">Something went wrong</string>
     <string name="retry">Retry</string>
     <string name="new_posts">New posts</string>
+    <string name="image_picker_error">image picker error</string>
+    <string name="foto">Foto</string>
 </resources>

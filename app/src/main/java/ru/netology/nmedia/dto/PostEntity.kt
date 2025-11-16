@@ -43,7 +43,7 @@ data class PostEntity(
             Attachment(
                 url = it.url,
                 description = it.description,
-                type = it.type
+                type = AttachmentType.valueOf(it.type)
             )
         },
         sent,
@@ -67,7 +67,7 @@ data class PostEntity(
                 AttachmentEmbeddable(
                     url = it.url,
                     description = it.description,
-                    type = it.type
+                    type = it.type.name
                 )
             },
 
@@ -92,6 +92,6 @@ data class PostEntity(
 }
 data class AttachmentEmbeddable(
     val url: String,
-    val description: String,
+    val description: String?,
     val type: String
 )
