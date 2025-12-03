@@ -20,4 +20,25 @@
     <string name="new_posts">New posts</string>
     <string name="image_picker_error">image picker error</string>
     <string name="foto">Foto</string>
+    <string name="login">Login</string>
+    <string name="password">Password</string>
+    <string name="sign_in">Sign in</string>
+    <string name="error_empty_login">Empty login field</string>
+    <string name="error_empty_password">Empty password field</string>
+    <string name="error_auth_failed">Authentication error</string>
+    <string name="login_required">Login required</string>
+    <string name="action_log_to_acc">To perform this action, please log in to your account.</string>
+    <string name="cancel">Cancel</string>
+    <string name="exit">Exit</string>
+    <string name="are_u_sure">Are you sure you want to exit?</string>
+    <string name="yes_button">Yes</string>
+    <string name="no_button">No</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="confirm_password">confirm password</string>
+    <string name="name">Name</string>
+    <string name="error_password_mismatch">Password mismatch</string>
+    <string name="error_empty_name">Empty name field</string>
+    <string name="error_registration_failed">Registration failed</string>
+    <string name="take_photo">Take photo</string>
+    <string name="select_photo_from_gallery">Select from gallery</string>
 </resources>

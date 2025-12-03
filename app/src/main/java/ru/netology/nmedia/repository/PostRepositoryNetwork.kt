@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.map
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostApi
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
@@ -96,7 +97,13 @@ class PostRepositoryNetwork(private val dao: PostDao) : PostRepository {
 
     override suspend fun save(post: Post, image: File?): Post {
         val tempId = PostEntity.tempId()
-        val localPost = PostEntity.newLocalPost(post.content)
+        val currentUserId = AppAuth.getInstance().authState.value?.id
+            ?: throw IllegalStateException("User is not authorized")
+
+        val localPost = PostEntity.newLocalPost(
+            content = post.content,
+            authorId = currentUserId
+        )
         dao.insert(localPost)
 
         return try {

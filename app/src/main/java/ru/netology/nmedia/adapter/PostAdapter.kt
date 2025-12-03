@@ -83,6 +83,7 @@ class PostViewHolder(
 
             viewsTv.text = formatCount(post.views)
 
+            menu.isVisible = post.ownedByMe
             menu.setOnClickListener {
                 PopupMenu(it.context, it).apply {
                     inflate(R.menu.menu_post)

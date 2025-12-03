@@ -1,4 +1,4 @@
-package ru.netology.nmedia.activity
+package ru.netology.nmedia.activity.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater

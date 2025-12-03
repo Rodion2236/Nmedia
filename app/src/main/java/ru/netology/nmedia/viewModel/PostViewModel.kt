@@ -10,8 +10,10 @@ import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.database.PostDatabase
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
@@ -29,18 +31,23 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         0,
         "",
         "",
+        0,
         "",
         0,
     )
     private val repository: PostRepository = PostRepositoryNetwork(
         PostDatabase.getInstance(application).postDao()
     )
-    val data: LiveData<FeedModel> = repository.data.map {
-        FeedModel(
-            it,
-            it.isEmpty()
-        )
-    }.catch { it.printStackTrace() }.asLiveData(Dispatchers.Default)
+    val data: LiveData<FeedModel> = AppAuth.getInstance().authState.flatMapLatest { token ->
+        repository.data.map { posts ->
+            FeedModel(
+                posts.map { post ->
+                    post.copy(ownedByMe = post.authorId == token?.id)
+                },
+                posts.isEmpty()
+            )
+        }
+    }.asLiveData(Dispatchers.Default)
 
     val newerCount = data.switchMap {
         repository.getNewer(it.posts.firstOrNull()?.id ?: 0)
@@ -58,6 +65,26 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     private val _photo = MutableLiveData<PhotoModel?>(null)
     val photo: LiveData<PhotoModel?>
         get() = _photo
+
+    private val _showSignInDialog = SingleLiveEvent<Unit>()
+    val showSignInDialog: LiveData<Unit>
+        get() = _showSignInDialog
+
+    private val _onAddNewPost = SingleLiveEvent<Unit>()
+    val onAddNewPost: LiveData<Unit>
+        get() = _onAddNewPost
+
+    fun onAddButtonClicked() {
+        if (!isAuthorized()) {
+            _showSignInDialog.call()
+        } else {
+            _onAddNewPost.call()
+        }
+    }
+
+    private fun isAuthorized(): Boolean {
+        return AppAuth.getInstance().authState.value?.token != null
+    }
 
     init {
         load()
@@ -84,6 +111,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
 
     fun like(id: Long) = viewModelScope.launch {
         try {
+            if (!isAuthorized()) {
+                _showSignInDialog.call()
+                return@launch
+            }
+
             val currentPost = data.value?.posts?.find { it.id == id } ?: return@launch
             if (currentPost.likedByMe) {
                 repository.unlikeById(id)

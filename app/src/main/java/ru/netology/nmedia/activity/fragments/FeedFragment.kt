@@ -1,5 +1,6 @@
-package ru.netology.nmedia.activity
+package ru.netology.nmedia.activity.fragments
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,11 +10,8 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
@@ -129,12 +127,27 @@ class FeedFragment : Fragment() {
             binding.swipeRefresh.isRefreshing = state.loading
         }
 
+        viewmodel.onAddNewPost.observe(viewLifecycleOwner) {
+            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+        }
+
+        viewmodel.showSignInDialog.observe(viewLifecycleOwner) {
+            AlertDialog.Builder(requireContext())
+                .setTitle(R.string.login_required)
+                .setMessage(R.string.action_log_to_acc)
+                .setPositiveButton(R.string.login) { _, _ ->
+                    findNavController().navigate(R.id.action_feedFragment_to_loginFragment)
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+        }
+
         binding.swipeRefresh.setOnRefreshListener {
             viewmodel.load()
         }
 
         binding.add.setOnClickListener {
-            findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
+            viewmodel.onAddButtonClicked()
         }
         return binding.root
     }

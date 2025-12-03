@@ -10,6 +10,7 @@ data class PostEntity(
     val id: Long,
     val author: String,
     val authorAvatar: String? = null,
+    val authorId: Long,
     val content: String,
     val published: Long,
     val likes: Int = 0,
@@ -31,6 +32,7 @@ data class PostEntity(
         id,
         author,
         authorAvatar,
+        authorId,
         content,
         published,
         likes,
@@ -55,6 +57,7 @@ data class PostEntity(
             dto.id,
             dto.author,
             dto.authorAvatar,
+            dto.authorId,
             dto.content,
             dto.published,
             dto.likes,
@@ -71,7 +74,6 @@ data class PostEntity(
                 )
             },
 
-            ownedByMe = true,
             sent = true,
             timeSaved = dto.published,
             showInFeed = showInFeed
@@ -79,9 +81,10 @@ data class PostEntity(
 
         fun tempId(): Long = -System.currentTimeMillis()
 
-        fun newLocalPost(content: String): PostEntity = PostEntity(
+        fun newLocalPost(content: String, authorId: Long): PostEntity = PostEntity(
             id = tempId(),
             author = "Я",
+            authorId = authorId,
             content = content,
             published = System.currentTimeMillis(),
             ownedByMe = true,
