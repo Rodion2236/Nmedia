@@ -20,6 +20,7 @@ import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.AuthToken
 import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
+import ru.netology.nmedia.dto.PushToken
 
 private const val BASE_URL = "${BuildConfig.BASE_URL}/api/slow/"
 
@@ -94,6 +95,10 @@ interface PostApi {
         @Part("name") name: okhttp3.RequestBody,
         @Part file: MultipartBody.Part
     ): Response<AuthToken>
+
+    @POST("users/push-tokens")
+    suspend fun sendPushToken(@Body token: PushToken)
+
     companion object {
         val retrofitService: PostApi by lazy {
             retrofit.create(PostApi::class.java)
