@@ -1,31 +1,36 @@
 package ru.netology.nmedia.viewModel
 
-import android.app.Application
 import android.net.Uri
-import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
 import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import ru.netology.nmedia.auth.AppAuth
-import ru.netology.nmedia.database.PostDatabase
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
-import ru.netology.nmedia.repository.PostRepositoryNetwork
 import ru.netology.nmedia.util.SingleLiveEvent
 import java.io.File
+import javax.inject.Inject
 
-class PostViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class PostViewModel @Inject constructor(
+    private val repository: PostRepository,
+    private val appAuth: AppAuth
+) : ViewModel() {
 
     private val empty = Post(
         0,
@@ -35,10 +40,9 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         "",
         0,
     )
-    private val repository: PostRepository = PostRepositoryNetwork(
-        PostDatabase.getInstance(application).postDao()
-    )
-    val data: LiveData<FeedModel> = AppAuth.getInstance().authState.flatMapLatest { token ->
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val data: LiveData<FeedModel> = appAuth.authState.flatMapLatest { token ->
         repository.data.map { posts ->
             FeedModel(
                 posts.map { post ->
@@ -83,7 +87,7 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun isAuthorized(): Boolean {
-        return AppAuth.getInstance().authState.value?.token != null
+        return appAuth.authState.value?.token != null
     }
 
     init {
@@ -164,8 +168,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             edited.value?.let { postToEdit ->
                 val trimmed = content.trim()
                 if (trimmed.isNotBlank() && trimmed != postToEdit.content) {
-                    val postToSave = postToEdit.copy(content = trimmed)
-                    repository.save(postToSave, _photo.value?.file)
+                    withContext(Dispatchers.IO) {
+                        try {
+                            repository.save(
+                                postToEdit.copy(content = trimmed),
+                                _photo.value?.file)
+                        } finally {
+                            _photo.value?.file?.delete()
+                        }
+                    }
                     _postCreated.postValue(Unit)
                     edited.postValue(empty)
                 }
@@ -189,11 +200,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
-    fun editPost(id: Long) {
-        val postToEdit = data.value?.posts?.find { it.id == id }
-        if (postToEdit != null) {
-            edited.value = postToEdit
-        }
+    fun editPost(post: Post) {
+        edited.value = post
     }
 
     fun changePhoto(uri: Uri, file: File) {

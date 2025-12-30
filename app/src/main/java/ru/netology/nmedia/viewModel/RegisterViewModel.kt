@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaType
@@ -14,6 +15,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.auth.AppAuth
 import java.io.File
+import javax.inject.Inject
 
 data class RegisterState(
     val loading: Boolean = false,
@@ -21,7 +23,13 @@ data class RegisterState(
     val success: Boolean = false
 )
 
-class RegisterViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class RegisterViewModel @Inject constructor(
+    private val apiService: PostApi,
+    private val appAuth: AppAuth,
+    application: Application
+): AndroidViewModel(application) {
+
     private val _state = MutableLiveData(RegisterState())
     val state: LiveData<RegisterState> = _state
 
@@ -38,13 +46,13 @@ class RegisterViewModel(application: Application) : AndroidViewModel(application
                 val requestBody = photoFile.asRequestBody(mediaType)
                 val part = MultipartBody.Part.createFormData("file", photoFile.name, requestBody)
 
-                PostApi.retrofitService.registerWithPhoto(loginBody, passBody, nameBody, part)
-            } else {
-                PostApi.retrofitService.registerUser(login, pass, name)
-            }
+                apiService.registerWithPhoto(loginBody, passBody, nameBody, part)
+                } else {
+                    apiService.registerUser(login, pass, name)
+                }
 
             val body = response.body() ?: throw RuntimeException("Empty response")
-            AppAuth.getInstance().setAuth(body)
+            appAuth.setAuth(body)
 
             _state.postValue(RegisterState(success = true))
         } catch (_: Exception) {

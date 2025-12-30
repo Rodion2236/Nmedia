@@ -8,10 +8,12 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentLoginBinding
 import ru.netology.nmedia.viewModel.LoginViewModel
 
+@AndroidEntryPoint
 class LoginFragment : Fragment() {
 
     private val viewModel: LoginViewModel by viewModels()

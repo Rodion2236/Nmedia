@@ -5,10 +5,12 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.auth.AppAuth
+import javax.inject.Inject
 
 data class LoginState(
     val loading: Boolean = false,
@@ -16,7 +18,12 @@ data class LoginState(
     val success: Boolean = false
 )
 
-class LoginViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class LoginViewModel @Inject constructor(
+    private val apiService: PostApi,
+    private val appAuth: AppAuth,
+    application: Application
+) : AndroidViewModel(application) {
 
     private val _state = MutableLiveData(LoginState())
     val state: LiveData<LoginState> = _state
@@ -24,10 +31,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     fun authenticate(login: String, pass: String) = viewModelScope.launch(Dispatchers.Default) {
         try {
             _state.postValue(_state.value?.copy(loading = true, error = false))
-            val response = PostApi.retrofitService.authenticate(login, pass)
+            val response = apiService.authenticate(login, pass)
 
             val body = response.body() ?: throw RuntimeException("Empty response from server")
-            AppAuth.getInstance().setAuth(body)
+            appAuth.setAuth(body)
 
             _state.postValue(LoginState(success = true))
         } catch (_: Exception) {

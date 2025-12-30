@@ -17,14 +17,20 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.navigation.findNavController
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.databinding.AppActivityBinding
 import ru.netology.nmedia.viewModel.AuthViewModel
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class AppActivity : AppCompatActivity() {
 
+    @Inject
+    lateinit var appAuth: AppAuth
     private val authViewModel: AuthViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -86,7 +92,7 @@ class AppActivity : AppCompatActivity() {
                                 .setTitle(R.string.exit)
                                 .setMessage(R.string.are_u_sure)
                                 .setPositiveButton(R.string.yes_button) { _, _ ->
-                                    AppAuth.getInstance().clear()
+                                    appAuth.clear()
                                 }
                                 .setNegativeButton(R.string.no_button, null)
                                 .show()

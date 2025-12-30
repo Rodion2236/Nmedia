@@ -9,6 +9,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostViewHolder
@@ -18,6 +19,7 @@ import ru.netology.nmedia.util.postIdArg
 import ru.netology.nmedia.util.textArg
 import ru.netology.nmedia.viewModel.PostViewModel
 
+@AndroidEntryPoint
 class SinglePostFragment : Fragment() {
 
     private val viewModel: PostViewModel by activityViewModels {

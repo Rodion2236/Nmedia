@@ -12,11 +12,13 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentRegisterBinding
 import ru.netology.nmedia.viewModel.RegisterViewModel
 import java.io.File
 
+@AndroidEntryPoint
 class RegisterFragment : Fragment() {
 
     private val viewModel: RegisterViewModel by viewModels {

@@ -15,36 +15,40 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
+import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.util.postIdArg
 import ru.netology.nmedia.util.textArg
 import ru.netology.nmedia.viewModel.PostViewModel
 
+@AndroidEntryPoint
 class NewPostFragment : Fragment() {
-
-    private val viewModel: PostViewModel by activityViewModels {
-        defaultViewModelProviderFactory
-    }
+    private val viewModel: PostViewModel by viewModels()
     private val MAX_SIZE_PX = 2048
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentNewPostBinding.inflate(inflater, container, false)
 
         arguments?.textArg?.let {
             binding.content.setText(it)
             binding.content.setSelection(it.length)
+        }
 
-            arguments?.postIdArg?.let { id ->
-                if (id != 0L) {
-                    viewModel.editPost(id)
+        viewModel.data.observe(viewLifecycleOwner) { feedModel ->
+            val postId = arguments?.postIdArg
+            if (postId != null && postId != 0L) {
+                val postToEdit = feedModel.posts.find { it.id == postId }
+                if (postToEdit != null) {
+                    viewModel.editPost(postToEdit)
+                    arguments?.clear()
                 }
             }
         }
