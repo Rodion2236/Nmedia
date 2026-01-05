@@ -5,8 +5,8 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.isVisible
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
-import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import ru.netology.nmedia.R
@@ -31,7 +31,7 @@ interface OnPostInteractionListener {
 
 class PostAdapter(
     private val onPostInteractionListener: OnPostInteractionListener
-): ListAdapter<Post, PostViewHolder>(PostViewHolder.PostDiffCallback) {
+): PagingDataAdapter<Post, PostViewHolder>(PostViewHolder.PostDiffCallback) {
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -45,7 +45,7 @@ class PostAdapter(
         holder: PostViewHolder,
         position: Int
     ) {
-        val post = getItem(position)
+        val post = getItem(position) ?: return
         holder.bind(post)
     }
 }

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import ru.netology.nmedia.R
@@ -36,12 +37,12 @@ class SinglePostFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         val binding = FragmentSinglePostBinding.inflate(inflater, container, false)
 
-        viewModel.data.observe(viewLifecycleOwner) { state ->
-            val post = state.posts.find { it.id == postId }
-            if (post != null) {
+        lifecycleScope.launchWhenStarted {
+            try {
+                val post = viewModel.getById(postId)
                 PostViewHolder(binding.postLayout, object : OnPostInteractionListener {
                     override fun onLike(post: Post) {
                         viewModel.like(post.id)
@@ -93,7 +94,7 @@ class SinglePostFragment : Fragment() {
                         )
                     }
                 }).bind(post)
-            } else {
+            } catch (_: Exception) {
                 findNavController().navigateUp()
             }
         }

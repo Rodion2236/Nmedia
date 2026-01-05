@@ -3,7 +3,6 @@ package ru.netology.nmedia.activity.fragments
 import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,9 +10,12 @@ import androidx.core.net.toUri
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.paging.LoadState
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnPostInteractionListener
 import ru.netology.nmedia.adapter.PostAdapter
@@ -98,9 +100,10 @@ class FeedFragment : Fragment() {
 
         binding.list.adapter = adapter
 
-        viewmodel.data.observe(viewLifecycleOwner) { state ->
-            adapter.submitList(state.posts)
-            binding.empty.isVisible = state.empty
+        lifecycleScope.launchWhenCreated {
+            viewmodel.data.collectLatest {
+                adapter.submitData(it)
+            }
         }
 
         viewmodel.newerCount.observe(viewLifecycleOwner) { count ->
@@ -142,8 +145,16 @@ class FeedFragment : Fragment() {
                 .show()
         }
 
+        lifecycleScope.launchWhenCreated {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                binding.swipeRefresh.isRefreshing =
+                    loadStates.refresh is LoadState.Loading ||
+                            loadStates.prepend is LoadState.Loading
+            }
+        }
+
         binding.swipeRefresh.setOnRefreshListener {
-            viewmodel.load()
+            adapter.refresh()
         }
 
         binding.add.setOnClickListener {

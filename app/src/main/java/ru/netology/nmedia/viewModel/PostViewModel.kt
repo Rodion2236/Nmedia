@@ -1,24 +1,26 @@
 package ru.netology.nmedia.viewModel
 
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
-import androidx.lifecycle.switchMap
 import androidx.lifecycle.viewModelScope
+import androidx.paging.PagingData
+import androidx.paging.map
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.netology.nmedia.auth.AppAuth
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
-import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.model.FeedModelState
 import ru.netology.nmedia.model.PhotoModel
 import ru.netology.nmedia.repository.PostRepository
@@ -41,22 +43,27 @@ class PostViewModel @Inject constructor(
         0,
     )
 
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val data: LiveData<FeedModel> = appAuth.authState.flatMapLatest { token ->
-        repository.data.map { posts ->
-            FeedModel(
-                posts.map { post ->
-                    post.copy(ownedByMe = post.authorId == token?.id)
-                },
-                posts.isEmpty()
-            )
-        }
-    }.asLiveData(Dispatchers.Default)
+    suspend fun getById(id: Long): Post = repository.getById(id)
 
-    val newerCount = data.switchMap {
-        repository.getNewer(it.posts.firstOrNull()?.id ?: 0)
-            .catch { _state.postValue(FeedModelState(error = true)) }
-            .asLiveData(Dispatchers.Default) }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val data: Flow<PagingData<Post>> = appAuth.authState
+        .onEach { authState ->
+            Log.d("AUTH_REFRESH", "авторизация обновлена -> $authState")
+        }
+        .flatMapLatest { token ->
+            repository.data.map { pagingData ->
+                pagingData.map { post ->
+                    post.copy(ownedByMe = token?.id == post.authorId)
+                }
+            }
+        }
+        .flowOn(Dispatchers.Default)
+
+    val newerCount: LiveData<Int> = MutableLiveData(0)
+//    val newerCount = data.switchMap {
+//        repository.getNewer(it.posts.firstOrNull()?.id ?: 0)
+//            .catch { _state.postValue(FeedModelState(error = true)) }
+//            .asLiveData(Dispatchers.Default) }
 
     private val _state = MutableLiveData<FeedModelState>()
     val state: LiveData<FeedModelState>
@@ -120,12 +127,7 @@ class PostViewModel @Inject constructor(
                 return@launch
             }
 
-            val currentPost = data.value?.posts?.find { it.id == id } ?: return@launch
-            if (currentPost.likedByMe) {
-                repository.unlikeById(id)
-            } else {
-                repository.likeById(id)
-            }
+            repository.likeById(id)
         } catch (_: Exception) {
             _state.value = _state.value?.copy(
                 error = true

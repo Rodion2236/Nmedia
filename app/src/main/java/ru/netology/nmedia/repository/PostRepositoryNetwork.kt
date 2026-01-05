@@ -1,6 +1,7 @@
 package ru.netology.nmedia.repository
 
-import android.util.Log
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -9,7 +10,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.MultipartBody
@@ -18,7 +18,6 @@ import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
-import ru.netology.nmedia.dto.Media
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
 import ru.netology.nmedia.error.ApiError
@@ -35,11 +34,18 @@ class PostRepositoryNetwork @Inject constructor(
 
     private val uploadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
-    override val data = dao.getAll().map { it ->
-        it.map {
-            it.toDto()
+    override val data = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            PostPagingSource(
+                apiService
+            )
         }
-    }.flowOn(Dispatchers.Default)
+    ).flow
+
+    override suspend fun getById(id: Long): Post {
+        return apiService.getById(id)
+    }
 
     override fun getNewer(id: Long): Flow<Int> = flow {
         while (true) {

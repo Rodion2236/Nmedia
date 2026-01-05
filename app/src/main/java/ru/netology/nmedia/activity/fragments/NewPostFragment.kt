@@ -16,6 +16,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.github.dhaval2404.imagepicker.ImagePicker
 import dagger.hilt.android.AndroidEntryPoint
@@ -42,14 +43,16 @@ class NewPostFragment : Fragment() {
             binding.content.setSelection(it.length)
         }
 
-        viewModel.data.observe(viewLifecycleOwner) { feedModel ->
-            val postId = arguments?.postIdArg
-            if (postId != null && postId != 0L) {
-                val postToEdit = feedModel.posts.find { it.id == postId }
-                if (postToEdit != null) {
-                    viewModel.editPost(postToEdit)
-                    arguments?.clear()
-                }
+        lifecycleScope.launchWhenCreated {
+            val postId = arguments?.postIdArg ?: return@launchWhenCreated
+            if (postId == 0L) return@launchWhenCreated
+
+            try {
+                val postToEdit = viewModel.getById(postId)
+                viewModel.editPost(postToEdit)
+                arguments?.clear()
+            } catch (_: Exception) {
+                findNavController().navigateUp()
             }
         }
 

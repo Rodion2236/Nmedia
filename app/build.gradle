@@ -58,6 +58,7 @@ dependencies {
     def retrofit_version = "3.0.0"
     def retrofitgson_version = "3.0.0"
     def imagepicker_version = "2.1"
+    def paging_version = "3.3.6"
 
     implementation libs.androidx.core.ktx
     implementation libs.androidx.appcompat
@@ -92,6 +93,8 @@ dependencies {
 
     implementation "com.github.dhaval2404:imagepicker:$imagepicker_version"
     implementation "com.github.yalantis:ucrop:2.2.11"
+
+    implementation "androidx.paging:paging-runtime-ktx:$paging_version"
 
     testImplementation libs.junit
     androidTestImplementation libs.androidx.junit
