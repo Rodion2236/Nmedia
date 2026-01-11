@@ -20,6 +20,4 @@ interface PostRepository {
 
     suspend fun insertLocal(post: PostEntity)
     suspend fun saveRemote(post: Post): Post
-
-    suspend fun getAllASync()
 }

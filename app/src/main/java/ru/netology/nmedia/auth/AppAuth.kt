@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
-import okhttp3.Request
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dto.AuthToken
 import ru.netology.nmedia.dto.PushToken

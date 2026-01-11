@@ -50,7 +50,7 @@ class PostRepositoryNetwork @Inject constructor(
     override fun getNewer(id: Long): Flow<Int> = flow {
         while (true) {
             delay(10_000L)
-            val response = apiService.getNewer(id)
+            val response = apiService.getBefore(id, 10)
             if (!response.isSuccessful) {
                 throw ApiError(response.code(), response.message())
             }
@@ -65,15 +65,6 @@ class PostRepositoryNetwork @Inject constructor(
 
     override suspend fun showAllNewPosts() {
         dao.showAllNewPosts()
-    }
-
-    override suspend fun getAllASync() {
-        try {
-            val posts = apiService.getAll()
-            dao.insert(posts.map(PostEntity::fromDto))
-        } catch (e: Exception) {
-            throw RuntimeException("Load failed", e)
-        }
     }
 
     override suspend fun likeById(id: Long): Post {

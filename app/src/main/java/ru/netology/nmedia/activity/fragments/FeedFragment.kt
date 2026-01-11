@@ -13,7 +13,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import androidx.paging.LoadState
-import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import ru.netology.nmedia.R
@@ -119,17 +118,6 @@ class FeedFragment : Fragment() {
             }
         }
 
-        viewmodel.state.observe(viewLifecycleOwner) { state ->
-            if (state.error) {
-                Snackbar.make(binding.root, R.string.something_went_wrong, Snackbar.LENGTH_SHORT)
-                    .setAction(R.string.retry) {
-                        viewmodel.load()
-                    }
-                    .show()
-            }
-            binding.swipeRefresh.isRefreshing = state.loading
-        }
-
         viewmodel.onAddNewPost.observe(viewLifecycleOwner) {
             findNavController().navigate(R.id.action_feedFragment_to_newPostFragment)
         }
@@ -149,7 +137,8 @@ class FeedFragment : Fragment() {
             adapter.loadStateFlow.collectLatest { loadStates ->
                 binding.swipeRefresh.isRefreshing =
                     loadStates.refresh is LoadState.Loading ||
-                            loadStates.prepend is LoadState.Loading
+                            loadStates.prepend is LoadState.Loading ||
+                            loadStates.append is LoadState.Loading
             }
         }
 

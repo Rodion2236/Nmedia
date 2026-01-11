@@ -97,25 +97,6 @@ class PostViewModel @Inject constructor(
         return appAuth.authState.value?.token != null
     }
 
-    init {
-        load()
-    }
-
-    fun load() {
-        viewModelScope.launch {
-            _state.value = FeedModelState(loading = true)
-            try {
-                repository.getAllASync()
-                _state.value = FeedModelState()
-            } catch (_: Exception) {
-                _state.value = FeedModelState(
-                    error = true,
-                    onErrorRetry = { load() }
-                )
-            }
-        }
-    }
-
     fun showNewPosts() = viewModelScope.launch {
         repository.showAllNewPosts()
     }
