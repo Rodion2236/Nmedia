@@ -1,16 +1,22 @@
 package ru.netology.nmedia.dao
 
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import kotlinx.coroutines.flow.Flow
 import ru.netology.nmedia.dto.PostEntity
 
 @Dao
 interface PostDao {
     @Query("SELECT * FROM posts WHERE showInFeed = 1 ORDER BY timeSaved DESC")
-    fun getAll(): Flow<List<PostEntity>>
+    fun getPagingSource(): PagingSource<Int, PostEntity>
+
+    @Query("SELECT MAX(id) FROM posts WHERE showInFeed = 1")
+    suspend fun getNewestPostId(): Long?
+
+    @Query("SELECT MIN(id) FROM posts WHERE showInFeed = 1")
+    suspend fun getOldestPostId(): Long?
 
     @Query("UPDATE posts SET showInFeed = 1 WHERE showInFeed = 0")
     suspend fun showAllNewPosts()
@@ -26,7 +32,6 @@ interface PostDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(posts: List<PostEntity>)
-
 
     @Query("DELETE FROM posts WHERE id = :id")
     suspend fun deleteById(id: Long)

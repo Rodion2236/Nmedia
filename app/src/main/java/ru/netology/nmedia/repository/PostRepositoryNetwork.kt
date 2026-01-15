@@ -1,7 +1,9 @@
 package ru.netology.nmedia.repository
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
+import androidx.paging.map
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -10,12 +12,15 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
+import ru.netology.nmedia.dao.PostRemoteKeyDao
+import ru.netology.nmedia.database.PostDatabase
 import ru.netology.nmedia.dto.Attachment
 import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
@@ -30,18 +35,24 @@ import kotlin.coroutines.resumeWithException
 class PostRepositoryNetwork @Inject constructor(
     private val dao: PostDao,
     private val apiService: PostApi,
+    postRemoteKeyDao: PostRemoteKeyDao,
+    appDb: PostDatabase,
 ) : PostRepository {
 
     private val uploadScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    @OptIn(ExperimentalPagingApi::class)
     override val data = Pager(
         config = PagingConfig(pageSize = 10, enablePlaceholders = false),
-        pagingSourceFactory = {
-            PostPagingSource(
-                apiService
-            )
-        }
+        pagingSourceFactory = { dao.getPagingSource() },
+        remoteMediator = PostRemoteMediator(
+            apiService = apiService,
+            postDao = dao,
+            postRemoteKeyDao = postRemoteKeyDao,
+            appDb = appDb
+        )
     ).flow
+        .map { it.map(PostEntity::toDto) }
 
     override suspend fun getById(id: Long): Post {
         return apiService.getById(id)
