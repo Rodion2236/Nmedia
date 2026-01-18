@@ -65,10 +65,6 @@ class PostRemoteMediator(
                                 type = PostRemoteKeyEntity.KeyType.AFTER,
                                 key = body.first().id
                             ))
-                            postRemoteKeyDao.insert(PostRemoteKeyEntity(
-                                type = PostRemoteKeyEntity.KeyType.BEFORE,
-                                key = body.last().id
-                            ))
                         }
                     }
 
