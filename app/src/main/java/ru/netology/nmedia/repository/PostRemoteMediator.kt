@@ -7,7 +7,6 @@ import androidx.paging.RemoteMediator
 import androidx.room.withTransaction
 import okio.IOException
 import retrofit2.HttpException
-import retrofit2.Response
 import ru.netology.nmedia.api.PostApi
 import ru.netology.nmedia.dao.PostDao
 import ru.netology.nmedia.dao.PostRemoteKeyDao
@@ -30,21 +29,19 @@ class PostRemoteMediator(
         try {
             val response = when (loadType) {
                 LoadType.REFRESH -> {
-                    val localFirstId = postDao.getOldestPostId()
-                    val remoteFirstId = apiService.getLatest(1).body()?.firstOrNull()?.id
-                        ?: return MediatorResult.Success(endOfPaginationReached = true)
-
-                    if (remoteFirstId != null && localFirstId != null && remoteFirstId > localFirstId) {
-                        apiService.getBefore(remoteFirstId, state.config.pageSize)
+                    val afterKey = postRemoteKeyDao.max()
+                    if (afterKey == null) {
+                        apiService.getLatest(state.config.initialLoadSize)
                     } else {
-                        Response.success(emptyList())
+                        apiService.getAfter(afterKey, state.config.pageSize)
                     }
                 }
 
                 LoadType.APPEND -> {
-                    val lastItem = state.pages.lastOrNull()?.data?.lastOrNull()
-                        ?: return MediatorResult.Success(endOfPaginationReached = true)
-                    apiService.getAfter(lastItem.id, state.config.pageSize)
+                    val beforeKey = postRemoteKeyDao.min() ?: return MediatorResult.Success(
+                        endOfPaginationReached = true
+                    )
+                    apiService.getBefore(beforeKey, state.config.pageSize)
                 }
 
                 LoadType.PREPEND -> {
@@ -59,21 +56,33 @@ class PostRemoteMediator(
             val body = response.body() ?: emptyList()
 
             appDb.withTransaction {
-                if (loadType == LoadType.REFRESH && body.isNotEmpty()) {
-                    postDao.insert(body.map { PostEntity.fromDto(it) })
+                when (loadType) {
+                    LoadType.REFRESH -> {
+                        if (body.isNotEmpty()) {
+                            postDao.insert(body.map { PostEntity.fromDto(it) })
 
-                    postRemoteKeyDao.insert(
-                        PostRemoteKeyEntity(
-                            type = PostRemoteKeyEntity.KeyType.BEFORE,
-                            key = body.last().id
-                        )
-                    )
-                    postRemoteKeyDao.insert(
-                        PostRemoteKeyEntity(
-                            type = PostRemoteKeyEntity.KeyType.AFTER,
-                            key = body.first().id
-                        )
-                    )
+                            postRemoteKeyDao.insert(PostRemoteKeyEntity(
+                                type = PostRemoteKeyEntity.KeyType.AFTER,
+                                key = body.first().id
+                            ))
+                            postRemoteKeyDao.insert(PostRemoteKeyEntity(
+                                type = PostRemoteKeyEntity.KeyType.BEFORE,
+                                key = body.last().id
+                            ))
+                        }
+                    }
+
+                    LoadType.APPEND -> {
+                        if (body.isNotEmpty()) {
+                            postDao.insert(body.map { PostEntity.fromDto(it) })
+
+                            postRemoteKeyDao.insert(PostRemoteKeyEntity(
+                                type = PostRemoteKeyEntity.KeyType.BEFORE,
+                                key = body.last().id
+                            ))
+                        }
+                    }
+                    LoadType.PREPEND -> {}
                 }
             }
 
