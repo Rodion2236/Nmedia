@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import ru.netology.nmedia.auth.AppAuth
+import ru.netology.nmedia.dto.Ad
+import ru.netology.nmedia.dto.FeedItem
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.dto.PostEntity
 import ru.netology.nmedia.model.FeedModelState
@@ -46,24 +48,23 @@ class PostViewModel @Inject constructor(
     suspend fun getById(id: Long): Post = repository.getById(id)
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    val data: Flow<PagingData<Post>> = appAuth.authState
+    val data: Flow<PagingData<FeedItem>> = appAuth.authState
         .onEach { authState ->
             Log.d("AUTH_REFRESH", "авторизация обновлена -> $authState")
         }
         .flatMapLatest { token ->
             repository.data.map { pagingData ->
-                pagingData.map { post ->
-                    post.copy(ownedByMe = token?.id == post.authorId)
+                pagingData.map { item ->
+                    when (item) {
+                        is Post -> item.copy(ownedByMe = token?.id == item.authorId)
+                        is Ad -> item
+                    }
                 }
             }
         }
         .flowOn(Dispatchers.Default)
 
     val newerCount: LiveData<Int> = MutableLiveData(0)
-//    val newerCount = data.switchMap {
-//        repository.getNewer(it.posts.firstOrNull()?.id ?: 0)
-//            .catch { _state.postValue(FeedModelState(error = true)) }
-//            .asLiveData(Dispatchers.Default) }
 
     private val _state = MutableLiveData<FeedModelState>()
     val state: LiveData<FeedModelState>

@@ -38,14 +38,15 @@ class PostRemoteMediator(
                 }
 
                 LoadType.APPEND -> {
-                    val beforeKey = postRemoteKeyDao.min() ?: return MediatorResult.Success(
-                        endOfPaginationReached = true
-                    )
+                    val beforeKey = postRemoteKeyDao.min()
+                        ?: return MediatorResult.Success(endOfPaginationReached = true)
                     apiService.getBefore(beforeKey, state.config.pageSize)
                 }
 
                 LoadType.PREPEND -> {
-                    return MediatorResult.Success(endOfPaginationReached = true)
+                    val afterKey = postRemoteKeyDao.max()
+                        ?: return MediatorResult.Success(endOfPaginationReached = true)
+                    apiService.getAfter(afterKey, state.config.pageSize)
                 }
             }
 
@@ -65,6 +66,13 @@ class PostRemoteMediator(
                                 type = PostRemoteKeyEntity.KeyType.AFTER,
                                 key = body.first().id
                             ))
+                            val afterKey = postRemoteKeyDao.max()
+                            if (afterKey == null) {
+                                postRemoteKeyDao.insert(PostRemoteKeyEntity(
+                                    type = PostRemoteKeyEntity.KeyType.BEFORE,
+                                    key = body.last().id
+                                ))
+                            }
                         }
                     }
 
@@ -78,7 +86,16 @@ class PostRemoteMediator(
                             ))
                         }
                     }
-                    LoadType.PREPEND -> {}
+                    LoadType.PREPEND -> {
+                        if (body.isNotEmpty()) {
+                            postDao.insert(body.map { PostEntity.fromDto(it) })
+
+                            postRemoteKeyDao.insert(PostRemoteKeyEntity(
+                                type = PostRemoteKeyEntity.KeyType.AFTER,
+                                key = body.first().id
+                            ))
+                        }
+                    }
                 }
             }
 
